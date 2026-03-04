@@ -20,7 +20,7 @@ import Careers from './pages/Careers';
 
 // Admin imports
 import AdminLogin from './pages/Admin';
-import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import PrivateRoute from './components/admin/PrivateRoute';
 import SolutionsManager from './pages/admin/SolutionsManager';
 import IndustriesManager from './pages/admin/IndustriesManager';

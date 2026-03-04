@@ -28,8 +28,6 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/speedlight')
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    
-    // Log available models for debugging
     console.log('📦 Available models:', Object.keys(mongoose.models));
   })
   .catch(err => {
@@ -37,22 +35,36 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/speedligh
     process.exit(1);
   });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/solutions', authenticateToken, solutionRoutes);
-app.use('/api/industries', authenticateToken, industryRoutes);
-app.use('/api/solution-details', authenticateToken, solutionDetailsRoutes);
-app.use('/api/industry-details', authenticateToken, industryDetailsRoutes);
+// ========== PUBLIC ROUTES (NO AUTH REQUIRED) - PUT THESE FIRST ==========
 
-// PUBLIC ROUTES (no auth required)
+// Debug route to see all registered routes (optional - remove in production)
+app.get('/api/public/debug-routes', (req, res) => {
+  const routes = [];
+  const extractRoutes = (stack, basePath = '') => {
+    stack.forEach(layer => {
+      if (layer.route) {
+        routes.push({
+          path: basePath + layer.route.path,
+          methods: Object.keys(layer.route.methods)
+        });
+      } else if (layer.name === 'router' && layer.handle.stack) {
+        extractRoutes(layer.handle.stack, basePath);
+      }
+    });
+  };
+  extractRoutes(app._router.stack);
+  res.json({ routes: routes.sort((a, b) => a.path.localeCompare(b.path)) });
+});
 
 // Get all active solutions
 app.get('/api/public/solutions', async (req, res) => {
   try {
+    console.log('📡 Fetching public solutions...');
     const solutions = await Solution.find({ isActive: true }).sort({ order: 1 });
+    console.log(`✅ Found ${solutions.length} solutions`);
     res.json(solutions);
   } catch (error) {
-    console.error('Error in public solutions:', error);
+    console.error('❌ Error in public solutions:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -60,10 +72,12 @@ app.get('/api/public/solutions', async (req, res) => {
 // Get all active industries
 app.get('/api/public/industries', async (req, res) => {
   try {
+    console.log('📡 Fetching public industries...');
     const industries = await Industry.find({ isActive: true }).sort({ order: 1 });
+    console.log(`✅ Found ${industries.length} industries`);
     res.json(industries);
   } catch (error) {
-    console.error('Error in public industries:', error);
+    console.error('❌ Error in public industries:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -71,18 +85,21 @@ app.get('/api/public/industries', async (req, res) => {
 // Get solution details by solution ID
 app.get('/api/public/solution-details/:solutionId', async (req, res) => {
   try {
+    console.log(`📡 Fetching solution details for ID: ${req.params.solutionId}`);
     const solutionDetail = await SolutionDetail.findOne({ 
       solutionId: req.params.solutionId,
       isActive: true 
     }).populate('relatedSolutions', 'title icon description');
     
     if (!solutionDetail) {
+      console.log('❌ Solution details not found');
       return res.status(404).json({ error: 'Solution details not found' });
     }
     
+    console.log('✅ Solution details found');
     res.json(solutionDetail);
   } catch (error) {
-    console.error('Error in public solution details:', error);
+    console.error('❌ Error in public solution details:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -90,34 +107,47 @@ app.get('/api/public/solution-details/:solutionId', async (req, res) => {
 // Get industry details by industry ID
 app.get('/api/public/industry-details/:industryId', async (req, res) => {
   try {
+    console.log(`📡 Fetching industry details for ID: ${req.params.industryId}`);
     const industryDetail = await IndustryDetail.findOne({ 
       industryId: req.params.industryId,
       isActive: true 
     }).populate('featuredSolutions', 'title icon description');
     
     if (!industryDetail) {
+      console.log('❌ Industry details not found');
       return res.status(404).json({ error: 'Industry details not found' });
     }
     
+    console.log('✅ Industry details found');
     res.json(industryDetail);
   } catch (error) {
-    console.error('Error in public industry details:', error);
+    console.error('❌ Error in public industry details:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Error handling middleware
+// ========== AUTH ROUTES ==========
+app.use('/api/auth', authRoutes);
+
+// ========== PROTECTED ROUTES (REQUIRE AUTHENTICATION) ==========
+app.use('/api/solutions', authenticateToken, solutionRoutes);
+app.use('/api/industries', authenticateToken, industryRoutes);
+app.use('/api/solution-details', authenticateToken, solutionDetailsRoutes);
+app.use('/api/industry-details', authenticateToken, industryDetailsRoutes);
+
+// ========== ERROR HANDLING ==========
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// 404 handler
+// 404 handler - THIS MUST BE LAST
 app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Public API: http://localhost:${PORT}/api/public`);
