@@ -20,7 +20,11 @@ import {
   Avatar,
   Fade,
   Zoom,
+  Grow,
+  Chip,
+  alpha,
 } from '@mui/material';
+import { styled, keyframes } from '@mui/material/styles';
 import {
   Home as HomeIcon,
   Send as SendIcon,
@@ -32,46 +36,114 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   Assignment as AssignmentIcon,
+  RocketLaunch as RocketIcon,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 
+// Professional Color Palette
+const colors = {
+  primary: {
+    main: '#0A2647',
+    light: '#1B3A5C',
+    dark: '#051A30',
+    gradient: 'linear-gradient(135deg, #0A2647 0%, #1B3A5C 100%)',
+  },
+  secondary: {
+    main: '#C4A484',
+    light: '#D4B59E',
+    dark: '#A8896B',
+    gradient: 'linear-gradient(135deg, #C4A484 0%, #B89A7A 100%)',
+  },
+  accent: {
+    main: '#8B5A2B',
+    light: '#A6743C',
+    dark: '#6E451F',
+    gradient: 'linear-gradient(135deg, #8B5A2B 0%, #6E451F 100%)',
+  },
+  neutral: {
+    white: '#FFFFFF',
+    offWhite: '#F8F9FA',
+    lightGray: '#E9ECEF',
+    mediumGray: '#ADB5BD',
+    darkGray: '#495057',
+    charcoal: '#212529',
+    black: '#000000',
+  },
+  text: {
+    primary: '#212529',
+    secondary: '#495057',
+    disabled: '#ADB5BD',
+    inverse: '#FFFFFF',
+  },
+};
+
+// Animations
+const floatAnimation = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+`;
+
+const gradientFlow = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+// Styled Components
 const HeroSection = styled(Box)(({ theme }) => ({
-  background: '#0f172a',
-  color: 'white',
-  padding: theme.spacing(8, 0),
+  background: colors.primary.gradient,
+  color: colors.neutral.white,
+  padding: theme.spacing(12, 0),
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(135deg, rgba(37,99,235,0.1) 0%, transparent 100%)',
-    zIndex: 1,
-  },
+}));
+
+const AnimatedBackground = styled(Box)({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: `radial-gradient(circle at 20% 50%, ${alpha(colors.secondary.main, 0.1)} 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, ${alpha(colors.accent.main, 0.1)} 0%, transparent 50%)`,
+  animation: `${gradientFlow} 15s ease infinite`,
+  zIndex: 1,
+});
+
+const FloatingOrb = styled(Box)(({ size, position, delay }) => ({
+  position: 'absolute',
+  width: size,
+  height: size,
+  borderRadius: '50%',
+  background: `linear-gradient(135deg, ${alpha(colors.secondary.main, 0.1)} 0%, ${alpha(colors.accent.main, 0.05)} 100%)`,
+  filter: 'blur(60px)',
+  animation: `${floatAnimation} ${delay}s infinite ease-in-out`,
+  ...position,
+  zIndex: 0,
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
-  borderRadius: '24px',
-  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+  borderRadius: '32px',
+  boxShadow: `0 10px 25px -5px ${alpha(colors.primary.main, 0.1)}`,
+  border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
 }));
 
 const ReviewSection = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  backgroundColor: '#f8fafc',
-  borderRadius: '16px',
+  backgroundColor: alpha(colors.primary.main, 0.02),
+  borderRadius: '20px',
   marginBottom: theme.spacing(3),
+  border: `1px solid ${alpha(colors.secondary.main, 0.1)}`,
 }));
 
-const StepIcon = styled(Avatar)(({ theme }) => ({
+const StepIcon = styled(Avatar)(({ theme, active }) => ({
   width: 40,
   height: 40,
-  backgroundColor: '#2563eb',
-  color: 'white',
+  background: active ? colors.secondary.gradient : alpha(colors.primary.main, 0.1),
+  color: active ? colors.primary.main : colors.text.disabled,
+  transition: 'all 0.3s ease',
 }));
 
 const GetStarted = () => {
@@ -114,12 +186,12 @@ const GetStarted = () => {
   ];
 
   const budgetRanges = [
-    { value: '10k-50k', label: '$10,000 - $50,000' },
-    { value: '50k-100k', label: '$50,000 - $100,000' },
-    { value: '100k-250k', label: '$100,000 - $250,000' },
-    { value: '250k-500k', label: '$250,000 - $500,000' },
-    { value: '500k-1m', label: '$500,000 - $1,000,000' },
-    { value: '1m+', label: '$1,000,000+' },
+    { value: '10k-50k', label: '₹10L - ₹50L' },
+    { value: '50k-100k', label: '₹50L - ₹1Cr' },
+    { value: '100k-250k', label: '₹1Cr - ₹2.5Cr' },
+    { value: '250k-500k', label: '₹2.5Cr - ₹5Cr' },
+    { value: '500k-1m', label: '₹5Cr - ₹10Cr' },
+    { value: '1m+', label: '₹10Cr+' },
   ];
 
   const timelines = [
@@ -181,23 +253,57 @@ const GetStarted = () => {
 
   if (submitted) {
     return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%)', py: 8 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: colors.neutral.offWhite, py: 8 }}>
         <Container maxWidth="md">
           <Zoom in={true}>
-            <Paper sx={{ p: { xs: 4, md: 8 }, borderRadius: '32px', textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#10b981', width: 80, height: 80, mx: 'auto', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 48 }} />
+            <Paper sx={{ 
+              p: { xs: 4, md: 8 }, 
+              borderRadius: '48px', 
+              textAlign: 'center',
+              border: `1px solid ${alpha(colors.secondary.main, 0.2)}`,
+              boxShadow: `0 20px 40px -10px ${alpha(colors.primary.main, 0.2)}`,
+            }}>
+              <Avatar sx={{ 
+                bgcolor: colors.secondary.main, 
+                width: 100, 
+                height: 100, 
+                mx: 'auto', 
+                mb: 3,
+                color: colors.primary.main,
+              }}>
+                <CheckCircleIcon sx={{ fontSize: 60 }} />
               </Avatar>
               
-              <Typography variant="h2" sx={{ fontWeight: 700, mb: 2, color: '#0f172a', fontSize: { xs: '2rem', md: '3rem' } }}>
+              <Typography variant="h2" sx={{ 
+                fontWeight: 800, 
+                mb: 2, 
+                color: colors.primary.main,
+                fontSize: { xs: '2rem', md: '3rem' },
+              }}>
                 Thank You!
               </Typography>
               
-              <Typography variant="h6" sx={{ color: '#64748b', mb: 4, maxWidth: '600px', mx: 'auto' }}>
+              <Typography variant="h6" sx={{ 
+                color: colors.text.secondary, 
+                mb: 4, 
+                maxWidth: '600px', 
+                mx: 'auto' 
+              }}>
                 We've received your request and will get back to you within 24 hours.
               </Typography>
 
-              <Alert severity="success" sx={{ mb: 4, borderRadius: '12px', maxWidth: '500px', mx: 'auto' }}>
+              <Alert 
+                severity="success" 
+                sx={{ 
+                  mb: 4, 
+                  borderRadius: '16px', 
+                  maxWidth: '500px', 
+                  mx: 'auto',
+                  bgcolor: alpha(colors.secondary.main, 0.1),
+                  color: colors.primary.main,
+                  '& .MuiAlert-icon': { color: colors.secondary.main },
+                }}
+              >
                 A confirmation email has been sent to <strong>{formData.email}</strong>
               </Alert>
 
@@ -208,11 +314,14 @@ const GetStarted = () => {
                   variant="contained"
                   size="large"
                   sx={{
-                    bgcolor: '#2563eb',
-                    '&:hover': { bgcolor: '#1d4ed8' },
-                    borderRadius: '12px',
+                    background: colors.primary.gradient,
+                    color: colors.neutral.white,
+                    borderRadius: '16px',
                     px: 4,
                     py: 1.5,
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
                   }}
                 >
                   Return to Home
@@ -222,12 +331,15 @@ const GetStarted = () => {
                   variant="outlined"
                   size="large"
                   sx={{
-                    borderColor: '#2563eb',
-                    color: '#2563eb',
-                    '&:hover': { borderColor: '#1d4ed8', bgcolor: 'rgba(37,99,235,0.04)' },
-                    borderRadius: '12px',
+                    borderColor: colors.secondary.main,
+                    color: colors.secondary.main,
+                    borderRadius: '16px',
                     px: 4,
                     py: 1.5,
+                    '&:hover': {
+                      borderColor: colors.secondary.dark,
+                      bgcolor: alpha(colors.secondary.main, 0.1),
+                    },
                   }}
                 >
                   Submit Another Request
@@ -241,44 +353,74 @@ const GetStarted = () => {
   }
 
   return (
-    <Box sx={{ width: '100%', overflow: 'hidden' }}>
+    <Box sx={{ width: '100%', overflow: 'hidden', bgcolor: colors.neutral.offWhite }}>
       {/* Breadcrumbs */}
-      <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link to="/" style={{ textDecoration: 'none', color: '#64748b', display: 'flex', alignItems: 'center' }}>
-            <HomeIcon sx={{ mr: 0.5, fontSize: 18 }} />
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Breadcrumbs 
+          separator={<Typography variant="body2" sx={{ color: alpha(colors.primary.main, 0.5) }}>/</Typography>}
+        >
+          <Link to="/" style={{ 
+            textDecoration: 'none', 
+            color: alpha(colors.primary.main, 0.7),
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}>
+            <HomeIcon sx={{ fontSize: 18 }} />
             Home
           </Link>
-          <Typography color="#2563eb">Get Started</Typography>
+          <Typography sx={{ color: colors.secondary.main, fontWeight: 600 }}>Get Started</Typography>
         </Breadcrumbs>
       </Container>
 
       {/* Hero Section */}
       <HeroSection>
-        <Container maxWidth="xl">
-          <Box sx={{ maxWidth: '800px' }}>
-            <Typography 
-              variant="h1" 
-              sx={{ 
-                fontWeight: 700, 
-                mb: 2, 
-                color: 'white',
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
-              }}
-            >
-              Get Started
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: '#94a3b8',
-                fontSize: { xs: '1.1rem', md: '1.25rem' },
-                lineHeight: 1.6,
-              }}
-            >
-              Let's discuss your project and transform your technology infrastructure
-            </Typography>
-          </Box>
+        <AnimatedBackground />
+        <FloatingOrb size="400px" delay="6" position={{ top: '-100px', right: '-100px' }} />
+        <FloatingOrb size="300px" delay="8" position={{ bottom: '-50px', left: '-50px' }} />
+        
+        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2 }}>
+          <Fade in={true} timeout={1000}>
+            <Box sx={{ maxWidth: '900px' }}>
+              <Chip
+                icon={<RocketIcon />}
+                label="Start Your Journey"
+                sx={{
+                  mb: 3,
+                  background: alpha(colors.secondary.main, 0.15),
+                  color: colors.secondary.main,
+                  border: `1px solid ${alpha(colors.secondary.main, 0.3)}`,
+                  borderRadius: '30px',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': { color: colors.secondary.main },
+                }}
+              />
+              <Typography 
+                variant="h1" 
+                sx={{ 
+                  fontWeight: 800, 
+                  mb: 3, 
+                  color: colors.neutral.white,
+                  fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                  lineHeight: 1.2,
+                }}
+              >
+                Get Started
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  color: alpha(colors.neutral.white, 0.9),
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  lineHeight: 1.8,
+                  maxWidth: '800px',
+                }}
+              >
+                Let's discuss your project and transform your technology infrastructure. 
+                Fill out the form below and our experts will get back to you within 24 hours.
+              </Typography>
+            </Box>
+          </Fade>
         </Container>
       </HeroSection>
 
@@ -291,27 +433,32 @@ const GetStarted = () => {
               <Step key={label}>
                 <StepLabel
                   StepIconComponent={() => (
-                    <StepIcon>
+                    <StepIcon active={activeStep >= index}>
                       {index === 0 && <PersonIcon />}
                       {index === 1 && <AssignmentIcon />}
                       {index === 2 && <CheckCircleIcon />}
                     </StepIcon>
                   )}
                 >
-                  {label}
+                  <Typography sx={{ 
+                    color: activeStep >= index ? colors.secondary.main : colors.text.disabled,
+                    fontWeight: activeStep >= index ? 600 : 400,
+                  }}>
+                    {label}
+                  </Typography>
                 </StepLabel>
               </Step>
             ))}
           </Stepper>
 
-          <Divider sx={{ mb: 4 }} />
+          <Divider sx={{ mb: 4, bgcolor: alpha(colors.primary.main, 0.1) }} />
 
           <form onSubmit={handleSubmit}>
             {/* Step 1: Basic Information */}
             {activeStep === 0 && (
               <Fade in={true}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 4, color: colors.primary.main }}>
                     Basic Information
                   </Typography>
                   
@@ -325,9 +472,9 @@ const GetStarted = () => {
                         onChange={handleChange}
                         required
                         InputProps={{
-                          startAdornment: <PersonIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                          startAdornment: <PersonIcon sx={{ mr: 1, color: colors.secondary.main }} />,
                         }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       />
                     </Grid>
 
@@ -341,9 +488,9 @@ const GetStarted = () => {
                         onChange={handleChange}
                         required
                         InputProps={{
-                          startAdornment: <EmailIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                          startAdornment: <EmailIcon sx={{ mr: 1, color: colors.secondary.main }} />,
                         }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       />
                     </Grid>
 
@@ -356,9 +503,9 @@ const GetStarted = () => {
                         onChange={handleChange}
                         required
                         InputProps={{
-                          startAdornment: <PhoneIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                          startAdornment: <PhoneIcon sx={{ mr: 1, color: colors.secondary.main }} />,
                         }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       />
                     </Grid>
 
@@ -370,9 +517,9 @@ const GetStarted = () => {
                         value={formData.company}
                         onChange={handleChange}
                         InputProps={{
-                          startAdornment: <BusinessIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                          startAdornment: <BusinessIcon sx={{ mr: 1, color: colors.secondary.main }} />,
                         }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       />
                     </Grid>
                   </Grid>
@@ -384,7 +531,7 @@ const GetStarted = () => {
             {activeStep === 1 && (
               <Fade in={true}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 4, color: colors.primary.main }}>
                     Project Details
                   </Typography>
 
@@ -398,7 +545,7 @@ const GetStarted = () => {
                         value={formData.industry}
                         onChange={handleChange}
                         required
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       >
                         {industries.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -417,7 +564,7 @@ const GetStarted = () => {
                         value={formData.projectType}
                         onChange={handleChange}
                         required
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       >
                         {projectTypes.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -435,7 +582,7 @@ const GetStarted = () => {
                         name="budget"
                         value={formData.budget}
                         onChange={handleChange}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       >
                         {budgetRanges.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -453,7 +600,7 @@ const GetStarted = () => {
                         name="timeline"
                         value={formData.timeline}
                         onChange={handleChange}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       >
                         {timelines.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
@@ -474,7 +621,7 @@ const GetStarted = () => {
                         onChange={handleChange}
                         required
                         placeholder="Tell us about your project requirements, goals, and any specific challenges..."
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        sx={textFieldStyles}
                       />
                     </Grid>
                   </Grid>
@@ -486,12 +633,12 @@ const GetStarted = () => {
             {activeStep === 2 && (
               <Fade in={true}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 4, color: colors.primary.main }}>
                     Review Your Information
                   </Typography>
 
                   <ReviewSection>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#2563eb' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: colors.secondary.main }}>
                       Personal Information
                     </Typography>
                     <Grid container spacing={2}>
@@ -517,7 +664,7 @@ const GetStarted = () => {
                   </ReviewSection>
 
                   <ReviewSection>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#2563eb' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: colors.secondary.main }}>
                       Project Details
                     </Typography>
                     <Grid container spacing={2}>
@@ -561,12 +708,12 @@ const GetStarted = () => {
                         checked={formData.newsletter}
                         onChange={handleChange}
                         sx={{
-                          color: '#2563eb',
-                          '&.Mui-checked': { color: '#2563eb' },
+                          color: colors.secondary.main,
+                          '&.Mui-checked': { color: colors.secondary.main },
                         }}
                       />
                     }
-                    label="Subscribe to our newsletter for technology insights and updates"
+                    label={<Typography sx={{ color: colors.text.secondary }}>Subscribe to our newsletter for technology insights and updates</Typography>}
                   />
                 </Box>
               </Fade>
@@ -579,8 +726,8 @@ const GetStarted = () => {
                 disabled={activeStep === 0}
                 startIcon={<ArrowBackIcon />}
                 sx={{
-                  color: '#64748b',
-                  '&:hover': { bgcolor: '#f1f5f9' },
+                  color: colors.text.secondary,
+                  '&:hover': { bgcolor: alpha(colors.primary.main, 0.05) },
                 }}
               >
                 Back
@@ -594,11 +741,17 @@ const GetStarted = () => {
                     endIcon={<SendIcon />}
                     disabled={!isStepValid()}
                     sx={{
-                      bgcolor: '#10b981',
-                      '&:hover': { bgcolor: '#059669' },
+                      background: colors.secondary.gradient,
+                      color: colors.primary.main,
                       borderRadius: '12px',
                       px: 4,
                       py: 1.5,
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                      },
+                      '&.Mui-disabled': {
+                        background: alpha(colors.secondary.main, 0.3),
+                      },
                     }}
                   >
                     Submit Request
@@ -610,11 +763,17 @@ const GetStarted = () => {
                     endIcon={<ArrowForwardIcon />}
                     disabled={!isStepValid()}
                     sx={{
-                      bgcolor: '#2563eb',
-                      '&:hover': { bgcolor: '#1d4ed8' },
+                      background: colors.secondary.gradient,
+                      color: colors.primary.main,
                       borderRadius: '12px',
                       px: 4,
                       py: 1.5,
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                      },
+                      '&.Mui-disabled': {
+                        background: alpha(colors.secondary.main, 0.3),
+                      },
                     }}
                   >
                     Next Step
@@ -627,6 +786,21 @@ const GetStarted = () => {
       </Container>
     </Box>
   );
+};
+
+const textFieldStyles = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    '&:hover fieldset': {
+      borderColor: colors.secondary.main,
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: colors.secondary.main,
+    },
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: colors.secondary.main,
+  },
 };
 
 export default GetStarted;

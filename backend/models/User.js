@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';  // This should work with ES modules
 
 const userSchema = new mongoose.Schema({
   username: {

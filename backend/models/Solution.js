@@ -15,7 +15,6 @@ const solutionSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['collaboration', 'audio', 'display', 'networking', 'control', 'support'],
     default: 'collaboration'
   },
   order: {
