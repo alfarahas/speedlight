@@ -14,7 +14,7 @@ const api = axios.create({
 // PUBLIC ENDPOINTS (no auth required)
 export const fetchSolutions = async () => {
   try {
-    const response = await api.get('/public/solutions');
+    const response = await api.get('/api/public/solutions');
     return response.data;
   } catch (error) {
     console.error('Error fetching solutions:', error);
@@ -26,7 +26,7 @@ export const fetchSolutions = async () => {
 export const fetchIndustries = async () => {
   try {
     // FIXED: Use public endpoint instead of protected one
-    const response = await api.get('/public/industries');
+    const response = await api.get('/api/public/industries');
     return response.data;
   } catch (error) {
     console.error('Error fetching industries:', error);
@@ -111,7 +111,7 @@ export const createSolution = async (solutionData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.post('/solutions', solutionData, {
+    const response = await api.post('/api/solutions', solutionData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -127,7 +127,7 @@ export const updateSolution = async (id, solutionData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.put(`/solutions/${id}`, solutionData, {
+    const response = await api.put(`/api/solutions/${id}`, solutionData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -143,7 +143,7 @@ export const deleteSolution = async (id) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.delete(`/solutions/${id}`, {
+    const response = await api.delete(`/api/solutions/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -159,7 +159,7 @@ export const createIndustry = async (industryData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.post('/industries', industryData, {
+    const response = await api.post('/api/industries', industryData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -175,7 +175,7 @@ export const updateIndustry = async (id, industryData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.put(`/industries/${id}`, industryData, {
+    const response = await api.put(`/api/industries/${id}`, industryData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -191,7 +191,7 @@ export const deleteIndustry = async (id) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.delete(`/industries/${id}`, {
+    const response = await api.delete(`/api/industries/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -204,7 +204,7 @@ export const deleteIndustry = async (id) => {
 // Solution Details endpoints - PUBLIC
 export const fetchSolutionDetails = async (solutionId) => {
   try {
-    const response = await api.get(`/public/solution-details/${solutionId}`);
+    const response = await api.get(`/api/public/solution-details/${solutionId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching solution details:', error);
@@ -219,7 +219,7 @@ export const createSolutionDetails = async (detailsData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.post('/solution-details', detailsData, {
+    const response = await api.post('/api/solution-details', detailsData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -235,7 +235,7 @@ export const updateSolutionDetails = async (id, detailsData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.put(`/solution-details/${id}`, detailsData, {
+    const response = await api.put(`/api/solution-details/${id}`, detailsData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -251,7 +251,7 @@ export const deleteSolutionDetails = async (id) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.delete(`/solution-details/${id}`, {
+    const response = await api.delete(`/api/solution-details/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -264,7 +264,7 @@ export const deleteSolutionDetails = async (id) => {
 // Industry Details endpoints - PUBLIC
 export const fetchIndustryDetails = async (industryId) => {
   try {
-    const response = await api.get(`/public/industry-details/${industryId}`);
+    const response = await api.get(`/api/public/industry-details/${industryId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching industry details:', error);
@@ -279,7 +279,7 @@ export const createIndustryDetails = async (detailsData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.post('/industry-details', detailsData, {
+    const response = await api.post('/api/industry-details', detailsData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -295,7 +295,7 @@ export const updateIndustryDetails = async (id, detailsData) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.put(`/industry-details/${id}`, detailsData, {
+    const response = await api.put(`/api/industry-details/${id}`, detailsData, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -311,7 +311,7 @@ export const deleteIndustryDetails = async (id) => {
     if (!token) {
       throw new Error('No authentication token found');
     }
-    const response = await api.delete(`/industry-details/${id}`, {
+    const response = await api.delete(`/api/industry-details/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
