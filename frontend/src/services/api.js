@@ -261,4 +261,64 @@ export const deleteSolutionDetails = async (id) => {
   }
 };
 
+// Industry Details endpoints - PUBLIC
+export const fetchIndustryDetails = async (industryId) => {
+  try {
+    const response = await api.get(`/public/industry-details/${industryId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching industry details:', error);
+    return null;
+  }
+};
+
+// Industry Details endpoints - ADMIN (require token)
+export const createIndustryDetails = async (detailsData) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    const response = await api.post('/industry-details', detailsData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating industry details:', error);
+    throw error;
+  }
+};
+
+export const updateIndustryDetails = async (id, detailsData) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    const response = await api.put(`/industry-details/${id}`, detailsData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating industry details:', error);
+    throw error;
+  }
+};
+
+export const deleteIndustryDetails = async (id) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    const response = await api.delete(`/industry-details/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting industry details:', error);
+    throw error;
+  }
+};
+
 export default api;

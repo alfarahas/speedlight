@@ -1,6 +1,84 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
+  TextField,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
+  Grid,
+  Breadcrumbs,
+  Alert,
+  Divider,
+  Avatar,
+  Fade,
+  Zoom,
+} from '@mui/material';
+import {
+  Home as HomeIcon,
+  Send as SendIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  CheckCircle as CheckCircleIcon,
+  Business as BusinessIcon,
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Phone as PhoneIcon,
+  Assignment as AssignmentIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+
+const HeroSection = styled(Box)(({ theme }) => ({
+  background: '#0f172a',
+  color: 'white',
+  padding: theme.spacing(8, 0),
+  position: 'relative',
+  overflow: 'hidden',
+  width: '100%',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, rgba(37,99,235,0.1) 0%, transparent 100%)',
+    zIndex: 1,
+  },
+}));
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  borderRadius: '24px',
+  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+}));
+
+const ReviewSection = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  backgroundColor: '#f8fafc',
+  borderRadius: '16px',
+  marginBottom: theme.spacing(3),
+}));
+
+const StepIcon = styled(Avatar)(({ theme }) => ({
+  width: 40,
+  height: 40,
+  backgroundColor: '#2563eb',
+  color: 'white',
+}));
 
 const GetStarted = () => {
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -14,8 +92,43 @@ const GetStarted = () => {
     newsletter: false
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [submitted, setSubmitted] = useState(false);
+  const steps = ['Basic Information', 'Project Details', 'Review & Submit'];
+
+  const industries = [
+    { value: 'corporate', label: 'Corporate & Enterprise' },
+    { value: 'education', label: 'Education & Digital Classrooms' },
+    { value: 'healthcare', label: 'Healthcare Facilities' },
+    { value: 'government', label: 'Government & Public Sector' },
+    { value: 'hospitality', label: 'Hospitality & Convention Centers' },
+    { value: 'banking', label: 'Banking & Financial Institution' },
+    { value: 'retail', label: 'Retail & Commercial Spaces' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const projectTypes = [
+    { value: 'new', label: 'New Installation' },
+    { value: 'upgrade', label: 'Upgrade Existing System' },
+    { value: 'consulting', label: 'Consulting & Design' },
+    { value: 'support', label: 'Support & Maintenance' },
+    { value: 'audit', label: 'System Audit & Assessment' },
+  ];
+
+  const budgetRanges = [
+    { value: '10k-50k', label: '$10,000 - $50,000' },
+    { value: '50k-100k', label: '$50,000 - $100,000' },
+    { value: '100k-250k', label: '$100,000 - $250,000' },
+    { value: '250k-500k', label: '$250,000 - $500,000' },
+    { value: '500k-1m', label: '$500,000 - $1,000,000' },
+    { value: '1m+', label: '$1,000,000+' },
+  ];
+
+  const timelines = [
+    { value: 'immediate', label: 'Immediate (Within 1 month)' },
+    { value: '1-3months', label: '1-3 months' },
+    { value: '3-6months', label: '3-6 months' },
+    { value: '6-12months', label: '6-12 months' },
+    { value: 'planning', label: 'Just planning / exploratory' },
+  ];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,322 +138,494 @@ const GetStarted = () => {
     });
   };
 
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
     setSubmitted(true);
+    // Here you would typically send the data to your backend
   };
 
-  const nextStep = () => {
-    setCurrentStep(currentStep + 1);
+  const handleReset = () => {
+    setActiveStep(0);
+    setFormData({
+      fullName: '',
+      email: '',
+      phone: '',
+      company: '',
+      industry: '',
+      projectType: '',
+      budget: '',
+      timeline: '',
+      message: '',
+      newsletter: false
+    });
   };
 
-  const prevStep = () => {
-    setCurrentStep(currentStep - 1);
+  const isStepValid = () => {
+    if (activeStep === 0) {
+      return formData.fullName && formData.email && formData.phone;
+    }
+    if (activeStep === 1) {
+      return formData.industry && formData.projectType && formData.message;
+    }
+    return true;
   };
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-20">
-        <div className="max-w-2xl mx-auto px-4 text-center">
-          <div className="bg-white p-12 rounded-2xl shadow-xl">
-            <div className="text-6xl mb-6">🎉</div>
-            <h1 className="text-4xl font-bold mb-4">Thank You!</h1>
-            <p className="text-xl text-gray-600 mb-8">
-              We've received your request and will get back to you within 24 hours.
-            </p>
-            <div className="bg-blue-50 p-6 rounded-lg mb-8">
-              <p className="text-gray-700">
+      <Box sx={{ minHeight: '100vh', bgcolor: 'linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%)', py: 8 }}>
+        <Container maxWidth="md">
+          <Zoom in={true}>
+            <Paper sx={{ p: { xs: 4, md: 8 }, borderRadius: '32px', textAlign: 'center' }}>
+              <Avatar sx={{ bgcolor: '#10b981', width: 80, height: 80, mx: 'auto', mb: 3 }}>
+                <CheckCircleIcon sx={{ fontSize: 48 }} />
+              </Avatar>
+              
+              <Typography variant="h2" sx={{ fontWeight: 700, mb: 2, color: '#0f172a', fontSize: { xs: '2rem', md: '3rem' } }}>
+                Thank You!
+              </Typography>
+              
+              <Typography variant="h6" sx={{ color: '#64748b', mb: 4, maxWidth: '600px', mx: 'auto' }}>
+                We've received your request and will get back to you within 24 hours.
+              </Typography>
+
+              <Alert severity="success" sx={{ mb: 4, borderRadius: '12px', maxWidth: '500px', mx: 'auto' }}>
                 A confirmation email has been sent to <strong>{formData.email}</strong>
-              </p>
-            </div>
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              Return to Home
-            </button>
-          </div>
-        </div>
-      </div>
+              </Alert>
+
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button
+                  component={Link}
+                  to="/"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    bgcolor: '#2563eb',
+                    '&:hover': { bgcolor: '#1d4ed8' },
+                    borderRadius: '12px',
+                    px: 4,
+                    py: 1.5,
+                  }}
+                >
+                  Return to Home
+                </Button>
+                <Button
+                  onClick={handleReset}
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    borderColor: '#2563eb',
+                    color: '#2563eb',
+                    '&:hover': { borderColor: '#1d4ed8', bgcolor: 'rgba(37,99,235,0.04)' },
+                    borderRadius: '12px',
+                    px: 4,
+                    py: 1.5,
+                  }}
+                >
+                  Submit Another Request
+                </Button>
+              </Box>
+            </Paper>
+          </Zoom>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-4">Get Started</h1>
-          <p className="text-xl max-w-2xl mx-auto">
-            Let's discuss your project and transform your technology infrastructure
-          </p>
-        </div>
-      </div>
+    <Box sx={{ width: '100%', overflow: 'hidden' }}>
+      {/* Breadcrumbs */}
+      <Container maxWidth="xl" sx={{ py: 2 }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link to="/" style={{ textDecoration: 'none', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+            <HomeIcon sx={{ mr: 0.5, fontSize: 18 }} />
+            Home
+          </Link>
+          <Typography color="#2563eb">Get Started</Typography>
+        </Breadcrumbs>
+      </Container>
 
-      {/* Progress Steps */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="flex justify-between mb-8">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex-1 text-center">
-              <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center font-bold mb-2
-                ${currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
-                {step}
-              </div>
-              <div className="text-sm font-medium">
-                {step === 1 && 'Basic Info'}
-                {step === 2 && 'Project Details'}
-                {step === 3 && 'Review'}
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Hero Section */}
+      <HeroSection>
+        <Container maxWidth="xl">
+          <Box sx={{ maxWidth: '800px' }}>
+            <Typography 
+              variant="h1" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 2, 
+                color: 'white',
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+              }}
+            >
+              Get Started
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: '#94a3b8',
+                fontSize: { xs: '1.1rem', md: '1.25rem' },
+                lineHeight: 1.6,
+              }}
+            >
+              Let's discuss your project and transform your technology infrastructure
+            </Typography>
+          </Box>
+        </Container>
+      </HeroSection>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+      {/* Main Form Section */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <StyledPaper>
+          {/* Stepper */}
+          <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel
+                  StepIconComponent={() => (
+                    <StepIcon>
+                      {index === 0 && <PersonIcon />}
+                      {index === 1 && <AssignmentIcon />}
+                      {index === 2 && <CheckCircleIcon />}
+                    </StepIcon>
+                  )}
+                >
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+
+          <Divider sx={{ mb: 4 }} />
+
           <form onSubmit={handleSubmit}>
             {/* Step 1: Basic Information */}
-            {currentStep === 1 && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Basic Information</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      required
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="john@company.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="+1 234 567 8900"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                    <input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="Your Company Ltd."
-                    />
-                  </div>
-                </div>
-              </div>
+            {activeStep === 0 && (
+              <Fade in={true}>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                    Basic Information
+                  </Typography>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Full Name *"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        required
+                        InputProps={{
+                          startAdornment: <PersonIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Email *"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        InputProps={{
+                          startAdornment: <EmailIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Phone *"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        InputProps={{
+                          startAdornment: <PhoneIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Company Name"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleChange}
+                        InputProps={{
+                          startAdornment: <BusinessIcon sx={{ mr: 1, color: '#94a3b8' }} />,
+                        }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Fade>
             )}
 
             {/* Step 2: Project Details */}
-            {currentStep === 2 && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Project Details</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Industry *</label>
-                    <select
-                      name="industry"
-                      required
-                      value={formData.industry}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select Industry</option>
-                      <option value="corporate">Corporate</option>
-                      <option value="education">Education</option>
-                      <option value="healthcare">Healthcare</option>
-                      <option value="government">Government</option>
-                      <option value="hospitality">Hospitality</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Project Type *</label>
-                    <select
-                      name="projectType"
-                      required
-                      value={formData.projectType}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select Project Type</option>
-                      <option value="new">New Installation</option>
-                      <option value="upgrade">Upgrade Existing</option>
-                      <option value="consulting">Consulting</option>
-                      <option value="support">Support & Maintenance</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Budget Range</label>
-                    <select
-                      name="budget"
-                      value={formData.budget}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select Budget</option>
-                      <option value="10k-50k">$10,000 - $50,000</option>
-                      <option value="50k-100k">$50,000 - $100,000</option>
-                      <option value="100k-500k">$100,000 - $500,000</option>
-                      <option value="500k+">$500,000+</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Timeline</label>
-                    <select
-                      name="timeline"
-                      value={formData.timeline}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">Select Timeline</option>
-                      <option value="immediate">Immediate (Within 1 month)</option>
-                      <option value="1-3months">1-3 months</option>
-                      <option value="3-6months">3-6 months</option>
-                      <option value="6months+">6+ months</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Project Description *</label>
-                    <textarea
-                      name="message"
-                      required
-                      rows="4"
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="Tell us about your project requirements..."
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
+            {activeStep === 1 && (
+              <Fade in={true}>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                    Project Details
+                  </Typography>
+
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Industry *"
+                        name="industry"
+                        value={formData.industry}
+                        onChange={handleChange}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      >
+                        {industries.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Project Type *"
+                        name="projectType"
+                        value={formData.projectType}
+                        onChange={handleChange}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      >
+                        {projectTypes.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Budget Range"
+                        name="budget"
+                        value={formData.budget}
+                        onChange={handleChange}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      >
+                        {budgetRanges.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Timeline"
+                        name="timeline"
+                        value={formData.timeline}
+                        onChange={handleChange}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      >
+                        {timelines.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Project Description *"
+                        name="message"
+                        multiline
+                        rows={4}
+                        value={formData.message}
+                        onChange={handleChange}
+                        required
+                        placeholder="Tell us about your project requirements, goals, and any specific challenges..."
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Fade>
             )}
 
             {/* Step 3: Review */}
-            {currentStep === 3 && (
-              <div>
-                <h2 className="text-2xl font-bold mb-6">Review Your Information</h2>
-                <div className="space-y-6">
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-semibold mb-4">Personal Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-medium">{formData.fullName}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Email</p>
-                        <p className="font-medium">{formData.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Phone</p>
-                        <p className="font-medium">{formData.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Company</p>
-                        <p className="font-medium">{formData.company || 'Not provided'}</p>
-                      </div>
-                    </div>
-                  </div>
+            {activeStep === 2 && (
+              <Fade in={true}>
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#0f172a' }}>
+                    Review Your Information
+                  </Typography>
 
-                  <div className="bg-gray-50 p-6 rounded-lg">
-                    <h3 className="font-semibold mb-4">Project Details</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Industry</p>
-                        <p className="font-medium">{formData.industry}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Project Type</p>
-                        <p className="font-medium">{formData.projectType}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Budget</p>
-                        <p className="font-medium">{formData.budget || 'Not specified'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Timeline</p>
-                        <p className="font-medium">{formData.timeline || 'Not specified'}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600">Project Description</p>
-                      <p className="font-medium">{formData.message}</p>
-                    </div>
-                  </div>
+                  <ReviewSection>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#2563eb' }}>
+                      Personal Information
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Full Name</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{formData.fullName}</Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Email</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{formData.email}</Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Phone</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{formData.phone}</Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Company</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {formData.company || 'Not provided'}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </ReviewSection>
 
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="newsletter"
-                      id="newsletter"
-                      checked={formData.newsletter}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="newsletter" className="ml-2 block text-sm text-gray-700">
-                      Subscribe to our newsletter for technology insights and updates
-                    </label>
-                  </div>
-                </div>
-              </div>
+                  <ReviewSection>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#2563eb' }}>
+                      Project Details
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Industry</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {industries.find(i => i.value === formData.industry)?.label || formData.industry}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Project Type</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {projectTypes.find(p => p.value === formData.projectType)?.label || formData.projectType}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Budget</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {budgetRanges.find(b => b.value === formData.budget)?.label || 'Not specified'}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">Timeline</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {timelines.find(t => t.value === formData.timeline)?.label || 'Not specified'}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="body2" color="text.secondary">Project Description</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500, mt: 1 }}>
+                          {formData.message}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </ReviewSection>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="newsletter"
+                        checked={formData.newsletter}
+                        onChange={handleChange}
+                        sx={{
+                          color: '#2563eb',
+                          '&.Mui-checked': { color: '#2563eb' },
+                        }}
+                      />
+                    }
+                    label="Subscribe to our newsletter for technology insights and updates"
+                  />
+                </Box>
+              </Fade>
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t">
-              {currentStep > 1 && (
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-              )}
-              {currentStep < 3 ? (
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="ml-auto bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700"
-                >
-                  Next Step
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="ml-auto bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700"
-                >
-                  Submit Request
-                </button>
-              )}
-            </div>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+              <Button
+                onClick={handleBack}
+                disabled={activeStep === 0}
+                startIcon={<ArrowBackIcon />}
+                sx={{
+                  color: '#64748b',
+                  '&:hover': { bgcolor: '#f1f5f9' },
+                }}
+              >
+                Back
+              </Button>
+
+              <Box>
+                {activeStep === steps.length - 1 ? (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    endIcon={<SendIcon />}
+                    disabled={!isStepValid()}
+                    sx={{
+                      bgcolor: '#10b981',
+                      '&:hover': { bgcolor: '#059669' },
+                      borderRadius: '12px',
+                      px: 4,
+                      py: 1.5,
+                    }}
+                  >
+                    Submit Request
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleNext}
+                    variant="contained"
+                    endIcon={<ArrowForwardIcon />}
+                    disabled={!isStepValid()}
+                    sx={{
+                      bgcolor: '#2563eb',
+                      '&:hover': { bgcolor: '#1d4ed8' },
+                      borderRadius: '12px',
+                      px: 4,
+                      py: 1.5,
+                    }}
+                  >
+                    Next Step
+                  </Button>
+                )}
+              </Box>
+            </Box>
           </form>
-        </div>
-      </div>
-    </div>
+        </StyledPaper>
+      </Container>
+    </Box>
   );
 };
 
