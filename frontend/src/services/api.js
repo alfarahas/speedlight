@@ -11,27 +11,76 @@ const api = axios.create({
   },
 });
 
+// Helper function to ensure array response
+const ensureArray = (data, mockData = []) => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data === null || data === undefined) {
+    console.warn('Received null/undefined data, using mock/empty array');
+    return mockData;
+  }
+  if (typeof data === 'object') {
+    // Check if it's an object with a data property that's an array
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    // Check if it's an object with items property that's an array
+    if (data.items && Array.isArray(data.items)) {
+      return data.items;
+    }
+    // If it's a single object, wrap in array
+    console.warn('Received single object, wrapping in array:', data);
+    return [data];
+  }
+  return mockData;
+};
+
 // PUBLIC ENDPOINTS (no auth required)
 export const fetchSolutions = async () => {
   try {
     const response = await api.get('/api/public/solutions');
-    return response.data;
+    return ensureArray(response.data, getMockSolutions());
   } catch (error) {
     console.error('Error fetching solutions:', error);
-    // Return mock data if backend is not available
     return getMockSolutions();
   }
 };
 
 export const fetchIndustries = async () => {
   try {
-    // FIXED: Use public endpoint instead of protected one
     const response = await api.get('/api/public/industries');
-    return response.data;
+    return ensureArray(response.data, getMockIndustries());
   } catch (error) {
     console.error('Error fetching industries:', error);
-    // Return mock data if backend is not available
     return getMockIndustries();
+  }
+};
+
+// ADMIN ENDPOINTS (require token) - FIXED with array validation
+export const fetchAdminSolutions = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/api/solutions', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    return ensureArray(response.data, []);
+  } catch (error) {
+    console.error('Error fetching admin solutions:', error);
+    return [];
+  }
+};
+
+export const fetchAdminIndustries = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/api/industries', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    return ensureArray(response.data, []);
+  } catch (error) {
+    console.error('Error fetching admin industries:', error);
+    return [];
   }
 };
 
@@ -104,7 +153,7 @@ const getMockIndustries = () => {
   ];
 };
 
-// ADMIN ENDPOINTS (require token)
+// Keep your existing CRUD operations but add array validation
 export const createSolution = async (solutionData) => {
   try {
     const token = localStorage.getItem('token');
@@ -212,7 +261,20 @@ export const fetchSolutionDetails = async (solutionId) => {
   }
 };
 
-// Solution Details endpoints - ADMIN (require token)
+// Solution Details endpoints - ADMIN
+export const fetchAdminSolutionDetails = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/api/solution-details', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    return ensureArray(response.data, []);
+  } catch (error) {
+    console.error('Error fetching admin solution details:', error);
+    return [];
+  }
+};
+
 export const createSolutionDetails = async (detailsData) => {
   try {
     const token = localStorage.getItem('token');
@@ -272,7 +334,20 @@ export const fetchIndustryDetails = async (industryId) => {
   }
 };
 
-// Industry Details endpoints - ADMIN (require token)
+// Industry Details endpoints - ADMIN
+export const fetchAdminIndustryDetails = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get('/api/industry-details', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    return ensureArray(response.data, []);
+  } catch (error) {
+    console.error('Error fetching admin industry details:', error);
+    return [];
+  }
+};
+
 export const createIndustryDetails = async (detailsData) => {
   try {
     const token = localStorage.getItem('token');
