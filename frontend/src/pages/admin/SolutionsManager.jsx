@@ -21,7 +21,6 @@ import {
   Switch,
   FormControlLabel,
   CircularProgress,
-  Alert,
   Tooltip,
   TablePagination,
 } from '@mui/material';
@@ -29,7 +28,6 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  DragIndicator as DragIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
@@ -43,14 +41,14 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const CategoryChip = styled(Chip)(({ theme, category }) => {
   const colors = {
-    collaboration: { bg: '#dbeafe', color: '#2563eb' },
-    audio: { bg: '#dcfce7', color: '#16a34a' },
-    display: { bg: '#fff7ed', color: '#ea580c' },
-    networking: { bg: '#fae8ff', color: '#9333ea' },
-    control: { bg: '#fee2e2', color: '#dc2626' },
-    support: { bg: '#cffafe', color: '#0891b2' },
+    'Workplace Collaboration & Video Conferencing': { bg: '#dbeafe', color: '#2563eb' },
+    'Integrated Professional Sound Systems': { bg: '#dcfce7', color: '#16a34a' },
+    'Display & Visualization Solutions': { bg: '#fff7ed', color: '#ea580c' },
+    'Enterprise Networking & Connectivity': { bg: '#fae8ff', color: '#9333ea' },
+    'Intelligent Systems & Control Platforms': { bg: '#fee2e2', color: '#dc2626' },
+    'System Lifecycle & Support Solutions': { bg: '#cffafe', color: '#0891b2' },
   };
-  const color = colors[category] || colors.collaboration;
+  const color = colors[category] || { bg: '#dbeafe', color: '#2563eb' };
   return {
     backgroundColor: color.bg,
     color: color.color,
@@ -59,6 +57,7 @@ const CategoryChip = styled(Chip)(({ theme, category }) => {
 });
 
 const SolutionsManager = () => {
+  // Initialize all state with proper default values
   const [solutions, setSolutions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -69,24 +68,40 @@ const SolutionsManager = () => {
     title: '',
     description: '',
     icon: '🔹',
-    category: 'collaboration',
+    category: 'Workplace Collaboration & Video Conferencing',
     order: 0,
     isActive: true
   });
 
+  // Fetch solutions on component mount
   useEffect(() => {
     fetchSolutions();
   }, []);
 
   const fetchSolutions = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        setSolutions([]);
+        return;
+      }
+
       const response = await axios.get(`${API_URL}/solutions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSolutions(response.data);
+      
+      // Ensure response.data is an array
+      const solutionsData = Array.isArray(response.data) ? response.data : 
+                           (response.data && response.data.data && Array.isArray(response.data.data)) ? response.data.data :
+                           [];
+      
+      console.log('Fetched solutions:', solutionsData); // Debug log
+      setSolutions(solutionsData);
     } catch (error) {
       console.error('Error fetching solutions:', error);
+      setSolutions([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -106,8 +121,8 @@ const SolutionsManager = () => {
       title: '',
       description: '',
       icon: '🔹',
-      category: 'collaboration',
-      order: solutions.length,
+      category: 'Workplace Collaboration & Video Conferencing',
+      order: Array.isArray(solutions) ? solutions.length : 0,
       isActive: true
     });
     setShowModal(true);
@@ -116,12 +131,12 @@ const SolutionsManager = () => {
   const openEditModal = (solution) => {
     setEditingSolution(solution);
     setFormData({
-      title: solution.title,
-      description: solution.description,
-      icon: solution.icon,
-      category: solution.category,
-      order: solution.order,
-      isActive: solution.isActive
+      title: solution.title || '',
+      description: solution.description || '',
+      icon: solution.icon || '🔹',
+      category: solution.category || 'Workplace Collaboration & Video Conferencing',
+      order: solution.order || 0,
+      isActive: solution.isActive !== undefined ? solution.isActive : true
     });
     setShowModal(true);
   };
@@ -130,6 +145,11 @@ const SolutionsManager = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        alert('No authentication token found');
+        return;
+      }
+
       const headers = { Authorization: `Bearer ${token}` };
 
       if (editingSolution) {
@@ -138,11 +158,11 @@ const SolutionsManager = () => {
         await axios.post(`${API_URL}/solutions`, formData, { headers });
       }
 
-      fetchSolutions();
+      await fetchSolutions();
       setShowModal(false);
     } catch (error) {
       console.error('Error saving solution:', error);
-      alert('Error saving solution');
+      alert(error.response?.data?.error || 'Error saving solution');
     }
   };
 
@@ -151,13 +171,19 @@ const SolutionsManager = () => {
 
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        alert('No authentication token found');
+        return;
+      }
+
       await axios.delete(`${API_URL}/solutions/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchSolutions();
+      
+      await fetchSolutions();
     } catch (error) {
       console.error('Error deleting solution:', error);
-      alert('Error deleting solution');
+      alert(error.response?.data?.error || 'Error deleting solution');
     }
   };
 
@@ -179,6 +205,7 @@ const SolutionsManager = () => {
     { value: 'System Lifecycle & Support Solutions', label: 'System Lifecycle & Support Solutions' },
   ];
 
+  // Loading state
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -186,6 +213,10 @@ const SolutionsManager = () => {
       </Box>
     );
   }
+
+  // Safe array check before rendering
+  const safeSolutions = Array.isArray(solutions) ? solutions : [];
+  const paginatedSolutions = safeSolutions.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <Box>
@@ -225,23 +256,22 @@ const SolutionsManager = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {solutions
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((solution) => (
-                <TableRow key={solution._id} hover>
-                  <TableCell sx={{ fontSize: '1.5rem' }}>{solution.icon}</TableCell>
+            {paginatedSolutions.length > 0 ? (
+              paginatedSolutions.map((solution) => (
+                <TableRow key={solution._id || Math.random()} hover>
+                  <TableCell sx={{ fontSize: '1.5rem' }}>{solution.icon || '🔹'}</TableCell>
                   <TableCell>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {solution.title}
+                      {solution.title || 'Untitled'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 300 }}>
-                      {solution.description.substring(0, 60)}...
+                      {solution.description ? solution.description.substring(0, 60) + '...' : 'No description'}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <CategoryChip 
-                      label={solution.category} 
-                      category={solution.category}
+                      label={solution.category || 'Workplace Collaboration & Video Conferencing'} 
+                      category={solution.category || 'Workplace Collaboration & Video Conferencing'}
                       size="small"
                     />
                   </TableCell>
@@ -256,7 +286,7 @@ const SolutionsManager = () => {
                       }}
                     />
                   </TableCell>
-                  <TableCell>{solution.order}</TableCell>
+                  <TableCell>{solution.order || 0}</TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit">
                       <IconButton
@@ -276,13 +306,22 @@ const SolutionsManager = () => {
                     </Tooltip>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No solutions found. Click "Add New Solution" to create one.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={solutions.length}
+          count={safeSolutions.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
