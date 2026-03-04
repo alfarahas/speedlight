@@ -35,17 +35,96 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/speedligh
     process.exit(1);
   });
 
-// ========== PUBLIC ROUTES (NO AUTH REQUIRED) ==========
+// ========== PUBLIC ROUTES (NO AUTH REQUIRED) - PUT THESE FIRST ==========
 
-// Public solutions and industries (from your route files)
-app.use('/api/public', solutionRoutes);        // This will handle /api/public/solutions
-app.use('/api/public', industryRoutes);        // This will handle /api/public/industries
+// Debug route to see all registered routes (optional - remove in production)
+app.get('/api/public/debug-routes', (req, res) => {
+  const routes = [];
+  const extractRoutes = (stack, basePath = '') => {
+    stack.forEach(layer => {
+      if (layer.route) {
+        routes.push({
+          path: basePath + layer.route.path,
+          methods: Object.keys(layer.route.methods)
+        });
+      } else if (layer.name === 'router' && layer.handle.stack) {
+        extractRoutes(layer.handle.stack, basePath);
+      }
+    });
+  };
+  extractRoutes(app._router.stack);
+  res.json({ routes: routes.sort((a, b) => a.path.localeCompare(b.path)) });
+});
 
-// Public solution details (from solutionDetails.js)
-app.use('/api/public', solutionDetailsRoutes); // This will handle /api/public/solution-details/:solutionId
+// Get all active solutions
+app.get('/api/public/solutions', async (req, res) => {
+  try {
+    console.log('📡 Fetching public solutions...');
+    const solutions = await Solution.find({ isActive: true }).sort({ order: 1 });
+    console.log(`✅ Found ${solutions.length} solutions`);
+    res.json(solutions);
+  } catch (error) {
+    console.error('❌ Error in public solutions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// Public industry details (from industryDetails.js)
-app.use('/api/public', industryDetailsRoutes); // This will handle /api/public/industry-details/:industryId
+// Get all active industries
+app.get('/api/public/industries', async (req, res) => {
+  try {
+    console.log('📡 Fetching public industries...');
+    const industries = await Industry.find({ isActive: true }).sort({ order: 1 });
+    console.log(`✅ Found ${industries.length} industries`);
+    res.json(industries);
+  } catch (error) {
+    console.error('❌ Error in public industries:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get solution details by solution ID
+app.get('/api/public/solution-details/:solutionId', async (req, res) => {
+  try {
+    console.log(`📡 Fetching solution details for ID: ${req.params.solutionId}`);
+    const solutionDetail = await SolutionDetail.findOne({ 
+      solutionId: req.params.solutionId,
+      isActive: true 
+    }).populate('relatedSolutions', 'title icon description');
+    
+    if (!solutionDetail) {
+      console.log('❌ Solution details not found');
+      return res.status(404).json({ error: 'Solution details not found' });
+    }
+    
+    console.log('✅ Solution details found');
+    res.json(solutionDetail);
+  } catch (error) {
+    console.error('❌ Error in public solution details:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get industry details by industry ID
+app.get('/api/public/industry-details/:industryId', async (req, res) => {
+  try {
+    console.log(`📡 Fetching industry details for ID: ${req.params.industryId}`);
+    const industryDetail = await IndustryDetail.findOne({ 
+      industryId: req.params.industryId,
+      isActive: true 
+    }).populate('featuredSolutions', 'title icon description');
+    
+    if (!industryDetail) {
+      console.log('❌ Industry details not found');
+      return res.status(404).json({ error: 'Industry details not found' });
+    }
+    
+    console.log('✅ Industry details found');
+    res.json(industryDetail);
+  } catch (error) {
+    console.error('❌ Error in public industry details:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ========== AUTH ROUTES ==========
 app.use('/api/auth', authRoutes);
@@ -62,7 +141,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// 404 handler
+// 404 handler - THIS MUST BE LAST
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ error: 'Route not found' });
