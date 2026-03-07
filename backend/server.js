@@ -3,11 +3,14 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import solutionRoutes from './routes/solutions.js';
 import industryRoutes from './routes/industries.js';
 import { authenticateToken } from './middleware/auth.js';
 import solutionDetailsRoutes from './routes/solutionDetails.js';
 import industryDetailsRoutes from './routes/industryDetails.js';
+import uploadRoutes from './routes/upload.js';
 
 // Import models directly
 import User from './models/User.js';
@@ -16,6 +19,9 @@ import Industry from './models/Industry.js';
 import SolutionDetail from './models/SolutionDetail.js';
 import IndustryDetail from './models/IndustryDetail.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
 
 const app = express();
@@ -23,6 +29,8 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/speedlight')
@@ -83,12 +91,14 @@ app.get('/api/public/industries', async (req, res) => {
 });
 
 // Get solution details by solution ID
-app.get('/api/public/solution-details/:solutionId', async (req, res) => {
+app.get('/api/public/solution-details/solution/:solutionId', async (req, res) => {
   try {
     console.log(`📡 Fetching solution details for ID: ${req.params.solutionId}`);
+    
+    // TEMPORARY: Find ANY detail for this solution (ignore status for now)
     const solutionDetail = await SolutionDetail.findOne({ 
-      solutionId: req.params.solutionId,
-      isActive: true 
+      solutionId: req.params.solutionId
+      // Don't filter by status temporarily
     }).populate('relatedSolutions', 'title icon description');
     
     if (!solutionDetail) {
@@ -96,21 +106,20 @@ app.get('/api/public/solution-details/:solutionId', async (req, res) => {
       return res.status(404).json({ error: 'Solution details not found' });
     }
     
-    console.log('✅ Solution details found');
+    console.log('✅ Solution details found with status:', solutionDetail.status);
     res.json(solutionDetail);
   } catch (error) {
-    console.error('❌ Error in public solution details:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Get industry details by industry ID
-app.get('/api/public/industry-details/:industryId', async (req, res) => {
+app.get('/api/public/industry-details/industry/:industryId', async (req, res) => {
   try {
     console.log(`📡 Fetching industry details for ID: ${req.params.industryId}`);
     const industryDetail = await IndustryDetail.findOne({ 
       industryId: req.params.industryId,
-      isActive: true 
     }).populate('featuredSolutions', 'title icon description');
     
     if (!industryDetail) {
@@ -134,6 +143,7 @@ app.use('/api/solutions', authenticateToken, solutionRoutes);
 app.use('/api/industries', authenticateToken, industryRoutes);
 app.use('/api/solution-details', authenticateToken, solutionDetailsRoutes);
 app.use('/api/industry-details', authenticateToken, industryDetailsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // ========== ERROR HANDLING ==========
 app.use((err, req, res, next) => {

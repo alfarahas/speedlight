@@ -33,6 +33,15 @@ import {
   Security as SecurityIcon,
   TrendingUp as TrendingUpIcon,
   RocketLaunch as RocketIcon,
+  Business as BusinessIcon,
+  School as SchoolIcon,
+  MeetingRoom as MeetingRoomIcon,
+  MusicNote as MusicNoteIcon,
+  Mic as MicIcon,
+  Speaker as SpeakerIcon,
+  Settings as SettingsIcon,
+  EmojiObjects as LightbulbIcon,
+  Handshake as HandshakeIcon,
 } from '@mui/icons-material';
 import { styled, keyframes } from '@mui/material/styles';
 import { fetchSolutions, fetchSolutionDetails } from '../services/api';
@@ -148,6 +157,21 @@ const BenefitCard = styled(Paper)(({ theme }) => ({
   },
 }));
 
+const PartnerCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+  textAlign: 'center',
+  borderRadius: '20px',
+  background: colors.neutral.white,
+  border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 15px 30px -10px ${alpha(colors.primary.main, 0.15)}`,
+    borderColor: colors.secondary.main,
+  },
+}));
+
 const SectionTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 800,
   marginBottom: theme.spacing(4),
@@ -165,6 +189,18 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   },
 }));
 
+const getApplicationIcon = (iconName) => {
+  const icons = {
+    'boardroom': <MeetingRoomIcon />,
+    'auditorium': <MusicNoteIcon />,
+    'classroom': <SchoolIcon />,
+    'conference': <BusinessIcon />,
+    'performance': <MicIcon />,
+    'default': <BusinessIcon />
+  };
+  return icons[iconName?.toLowerCase()] || icons.default;
+};
+
 const SolutionDetail = () => {
   const { id } = useParams();
   const [solution, setSolution] = useState(null);
@@ -177,41 +213,43 @@ const SolutionDetail = () => {
   }, [id]);
 
   const loadData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch main solution
-      const solutions = await fetchSolutions();
-      const foundSolution = solutions.find(s => (s._id || s.id) === id);
-      
-      if (!foundSolution) {
-        setError('Solution not found');
-        return;
-      }
-      
-      setSolution(foundSolution);
+  try {
+    setLoading(true);
+    
+    // Fetch main solution
+    const solutions = await fetchSolutions();
+    const foundSolution = solutions.find(s => (s._id || s.id) === id);
+    
+    if (!foundSolution) {
+      setError('Solution not found');
+      return;
+    }
+    
+    setSolution(foundSolution);
 
-      // Fetch solution details from backend
-      try {
-        const detailsData = await fetchSolutionDetails(id);
-        if (detailsData) {
-          setDetails(detailsData);
-        } else {
-          setDetails(null);
-        }
-      } catch (err) {
-        console.error('Error fetching solution details:', err);
+    // Fetch solution details from the PUBLIC endpoint
+    try {
+      const detailsData = await fetchSolutionDetails(id);
+      if (detailsData) {
+        console.log('Solution details loaded:', detailsData);
+        setDetails(detailsData);
+      } else {
+        console.log('No details found for this solution');
         setDetails(null);
       }
-
-      setError(null);
     } catch (err) {
-      setError('Failed to load solution details');
-      console.error(err);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching solution details:', err);
+      setDetails(null);
     }
-  };
+
+    setError(null);
+  } catch (err) {
+    setError('Failed to load solution details');
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) {
     return (
@@ -343,6 +381,23 @@ const SolutionDetail = () => {
                   Get Started with This Solution
                 </Button>
               </Grid>
+              {hasDetails && details.heroImage?.url && (
+                <Grid item xs={12} md={4}>
+                  <Zoom in={true} timeout={800}>
+                    <Box
+                      component="img"
+                      src={details.heroImage.url}
+                      alt={details.heroImage.alt || solution.title}
+                      sx={{
+                        width: '100%',
+                        maxHeight: 400,
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))',
+                      }}
+                    />
+                  </Zoom>
+                </Grid>
+              )}
             </Grid>
           </Fade>
         </Container>
@@ -365,8 +420,8 @@ const SolutionDetail = () => {
         </Container>
       )}
 
-      {/* Overview Section - Only show if available */}
-      {hasDetails && details.overview && (
+      {/* Overview Section */}
+      {hasDetails && details.overview?.description && (
         <Container maxWidth="xl" sx={{ py: 8 }}>
           <Fade in={true} timeout={800}>
             <Paper 
@@ -378,34 +433,34 @@ const SolutionDetail = () => {
                 border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
               }}
             >
-              <SectionTitle variant="h3">Overview</SectionTitle>
+              <SectionTitle variant="h3">{details.overview.title || 'Overview'}</SectionTitle>
               <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, color: colors.text.secondary }}>
-                {details.overview}
+                {details.overview.description}
               </Typography>
             </Paper>
           </Fade>
         </Container>
       )}
 
-      {/* Key Features - Only show if available */}
-      {hasDetails && details.keyFeatures && details.keyFeatures.length > 0 && (
+      {/* Key Features Section */}
+      {hasDetails && details.keyFeatures?.items && details.keyFeatures.items.length > 0 && (
         <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
           <Container maxWidth="xl">
             <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
-              Key Features
+              {details.keyFeatures.title || 'Key Features'}
             </SectionTitle>
             <Grid container spacing={3}>
-              {details.keyFeatures.map((feature, index) => (
+              {details.keyFeatures.items.map((feature, index) => (
                 <Grid item xs={12} md={6} lg={4} key={index}>
                   <Grow in={true} timeout={500 + index * 100}>
                     <FeatureCard>
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                           <Avatar sx={{ bgcolor: alpha(colors.secondary.main, 0.1), color: colors.secondary.main }}>
-                            <CheckIcon />
+                            {feature.icon ? <Box component="span" sx={{ fontSize: '1.2rem' }}>{feature.icon}</Box> : <CheckIcon />}
                           </Avatar>
                           <Typography variant="body1" sx={{ fontWeight: 500, color: colors.text.primary }}>
-                            {typeof feature === 'string' ? feature : feature.title || feature}
+                            {feature.text}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -418,22 +473,89 @@ const SolutionDetail = () => {
         </Box>
       )}
 
-      {/* Technologies - Only show if available */}
-      {hasDetails && details.technologies && details.technologies.length > 0 && (
+      {/* Business Benefits Section */}
+      {hasDetails && details.businessBenefits?.items && details.businessBenefits.items.length > 0 && (
         <Container maxWidth="xl" sx={{ py: 8 }}>
           <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
-            Technologies We Use
+            {details.businessBenefits.title || 'Business Benefits'}
           </SectionTitle>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', mt: 4 }}>
-            {details.technologies.map((tech, index) => (
+          <Grid container spacing={4}>
+            {details.businessBenefits.items.map((benefit, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Zoom in={true} timeout={500 + index * 100}>
+                  <BenefitCard elevation={0}>
+                    <Avatar sx={{ 
+                      bgcolor: alpha(colors.secondary.main, 0.1), 
+                      color: colors.secondary.main,
+                      width: 64, 
+                      height: 64, 
+                      mb: 2, 
+                      mx: 'auto',
+                      fontSize: '1.5rem',
+                    }}>
+                      {benefit.icon || <TrendingUpIcon />}
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: colors.primary.main }}>
+                      {benefit.text}
+                    </Typography>
+                  </BenefitCard>
+                </Zoom>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      )}
+
+      {/* What We Deliver Section */}
+      {hasDetails && details.whatWeDeliver?.items && details.whatWeDeliver.items.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              {details.whatWeDeliver.title || 'What We Deliver'}
+            </SectionTitle>
+            <Grid container spacing={3}>
+              {details.whatWeDeliver.items.map((item, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Grow in={true} timeout={500 + index * 100}>
+                    <Paper sx={{ 
+                      p: 3, 
+                      bgcolor: alpha(colors.primary.main, 0.02),
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar sx={{ bgcolor: colors.secondary.main, color: colors.primary.main }}>
+                          <CheckIcon />
+                        </Avatar>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {item.text}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  </Grow>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
+
+      {/* Applications Section */}
+      {hasDetails && details.applications?.items && details.applications.items.length > 0 && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            {details.applications.title || 'Applications'}
+          </SectionTitle>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+            {details.applications.items.map((app, index) => (
               <Zoom key={index} in={true} timeout={500 + index * 50}>
                 <Chip
-                  icon={<Box component="span" sx={{ fontSize: '1.2rem' }}>{tech.icon || '🔹'}</Box>}
-                  label={tech.name || tech}
+                  icon={app.icon ? <Box component="span" sx={{ fontSize: '1.2rem' }}>{app.icon}</Box> : getApplicationIcon(app.name)}
+                  label={app.name}
                   sx={{
                     bgcolor: alpha(colors.primary.main, 0.05),
                     color: colors.primary.main,
-                    fontSize: '0.95rem',
+                    fontSize: '1rem',
                     py: 2.5,
                     px: 1,
                     '& .MuiChip-icon': { color: colors.secondary.main },
@@ -451,37 +573,57 @@ const SolutionDetail = () => {
         </Container>
       )}
 
-      {/* Benefits - Only show if available */}
-      {hasDetails && details.benefits && details.benefits.length > 0 && (
+      {/* Technology Partners Section */}
+      {hasDetails && details.technologyPartners?.partners && details.technologyPartners.partners.length > 0 && (
         <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
           <Container maxWidth="xl">
             <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
-              Benefits
+              {details.technologyPartners.title || 'Technology Partners'}
             </SectionTitle>
             <Grid container spacing={4}>
-              {details.benefits.map((benefit, index) => (
-                <Grid item xs={12} md={4} key={index}>
-                  <Zoom in={true} timeout={500 + index * 100}>
-                    <BenefitCard elevation={0}>
-                      <Avatar sx={{ 
-                        bgcolor: alpha(colors.secondary.main, 0.1), 
-                        color: colors.secondary.main,
-                        width: 64, 
-                        height: 64, 
-                        mb: 2, 
-                        mx: 'auto',
-                        fontSize: '1.5rem',
-                      }}>
-                        {benefit.icon || '✨'}
-                      </Avatar>
-                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: colors.primary.main }}>
-                        {benefit.title}
+              {details.technologyPartners.partners.map((partner, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                  <Grow in={true} timeout={500 + index * 100}>
+                    <PartnerCard elevation={0}>
+                      {partner.logo?.url ? (
+                        <Avatar 
+                          src={partner.logo.url} 
+                          sx={{ width: 80, height: 80, mb: 2, mx: 'auto' }}
+                        />
+                      ) : (
+                        <Avatar sx={{ 
+                          width: 80, 
+                          height: 80, 
+                          mb: 2, 
+                          mx: 'auto',
+                          bgcolor: alpha(colors.secondary.main, 0.1),
+                          color: colors.secondary.main,
+                          fontSize: '2rem'
+                        }}>
+                          <HandshakeIcon />
+                        </Avatar>
+                      )}
+                      <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: colors.primary.main }}>
+                        {partner.name}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                        {benefit.description}
-                      </Typography>
-                    </BenefitCard>
-                  </Zoom>
+                      {partner.description && (
+                        <Typography variant="body2" sx={{ color: colors.text.secondary, mb: 2 }}>
+                          {partner.description}
+                        </Typography>
+                      )}
+                      {partner.website && (
+                        <Button
+                          href={partner.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="small"
+                          sx={{ color: colors.secondary.main }}
+                        >
+                          Visit Website
+                        </Button>
+                      )}
+                    </PartnerCard>
+                  </Grow>
                 </Grid>
               ))}
             </Grid>
@@ -489,40 +631,42 @@ const SolutionDetail = () => {
         </Box>
       )}
 
-      {/* Specifications - Only show if available */}
-      {hasDetails && details.specifications && details.specifications.length > 0 && (
+      {/* Why Speedlight Section */}
+      {hasDetails && details.whySpeedlight?.features && details.whySpeedlight.features.length > 0 && (
         <Container maxWidth="xl" sx={{ py: 8 }}>
-          <SectionTitle variant="h3">Specifications</SectionTitle>
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 4, 
-              bgcolor: colors.neutral.white,
-              borderRadius: '24px',
-              border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-            }}
-          >
-            <Grid container spacing={2}>
-              {details.specifications.map((spec, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Box sx={{ 
-                    p: 2, 
-                    borderBottom: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                    '&:hover': {
-                      bgcolor: alpha(colors.secondary.main, 0.05),
-                    },
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            {details.whySpeedlight.title || 'Why Speedlight Infosolutions'}
+          </SectionTitle>
+          <Grid container spacing={3}>
+            {details.whySpeedlight.features.map((feature, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Zoom in={true} timeout={500 + index * 100}>
+                  <Paper sx={{ 
+                    p: 4,
+                    textAlign: 'center',
+                    borderRadius: '20px',
+                    background: `linear-gradient(135deg, ${alpha(colors.primary.main, 0.02)} 0%, ${alpha(colors.secondary.main, 0.05)} 100%)`,
+                    border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
                   }}>
-                    <Typography variant="subtitle2" sx={{ color: colors.text.disabled, mb: 0.5 }}>
-                      {spec.name}
+                    <Avatar sx={{ 
+                      width: 80, 
+                      height: 80, 
+                      mb: 3, 
+                      mx: 'auto',
+                      bgcolor: colors.secondary.main,
+                      color: colors.primary.main,
+                      fontSize: '2rem'
+                    }}>
+                      {feature.icon || <LightbulbIcon />}
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: colors.primary.main }}>
+                      {feature.text}
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, color: colors.primary.main }}>
-                      {spec.value}
-                    </Typography>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
+                  </Paper>
+                </Zoom>
+              </Grid>
+            ))}
+          </Grid>
         </Container>
       )}
 

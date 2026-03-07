@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -45,21 +45,21 @@ import { fetchSolutions, fetchIndustries } from '../../services/api';
 // Professional Color Palette
 const colors = {
   primary: {
-    main: '#0A2647',      // Deep navy blue - sophisticated and trustworthy
-    light: '#1B3A5C',     // Slightly lighter navy
-    dark: '#051A30',      // Almost black navy
+    main: '#0A2647',
+    light: '#1B3A5C',
+    dark: '#051A30',
     gradient: 'linear-gradient(135deg, #0A2647 0%, #1B3A5C 100%)',
   },
   secondary: {
-    main: '#C4A484',      // Warm taupe - elegant and professional
-    light: '#D4B59E',     // Lighter taupe
-    dark: '#A8896B',      // Darker taupe
+    main: '#C4A484',
+    light: '#D4B59E',
+    dark: '#A8896B',
     gradient: 'linear-gradient(135deg, #C4A484 0%, #B89A7A 100%)',
   },
   accent: {
-    main: '#8B5A2B',      // Rich bronze - adds warmth and prestige
-    light: '#A6743C',     // Lighter bronze
-    dark: '#6E451F',      // Darker bronze
+    main: '#8B5A2B',
+    light: '#A6743C',
+    dark: '#6E451F',
     gradient: 'linear-gradient(135deg, #8B5A2B 0%, #6E451F 100%)',
   },
   neutral: {
@@ -75,7 +75,7 @@ const colors = {
     main: '#FFFFFF',
     dark: '#1E1E1E',
     paper: '#F8F9FA',
-    overlay: 'rgba(10, 38, 71, 0.95)', // Navy with opacity
+    overlay: 'rgba(10, 38, 71, 0.95)',
   },
   text: {
     primary: '#212529',
@@ -89,25 +89,7 @@ const colors = {
   info: '#0288D1',
 };
 
-// Styled Components for Advanced Effects
-const GlowingText = styled(Typography)(({ theme }) => ({
-  position: 'relative',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: -4,
-    left: 0,
-    width: '100%',
-    height: 2,
-    background: `linear-gradient(90deg, transparent, ${colors.secondary.main}, transparent)`,
-    transform: 'scaleX(0)',
-    transition: 'transform 0.3s ease',
-  },
-  '&:hover::after': {
-    transform: 'scaleX(1)',
-  },
-}));
-
+// Styled Components
 const StyledAppBar = styled(AppBar)(({ theme, scrolled }) => ({
   background: scrolled 
     ? colors.background.overlay
@@ -184,15 +166,27 @@ const GradientMenuItem = styled(MenuItem)(({ theme }) => ({
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [solutionsAnchorEl, setSolutionsAnchorEl] = useState(null);
-  const [industriesAnchorEl, setIndustriesAnchorEl] = useState(null);
-  const [aboutAnchorEl, setAboutAnchorEl] = useState(null);
-  const [activeDropdown, setActiveDropdown] = useState(null);
   
+  // Use a single state for the currently open dropdown
+  const [openDropdown, setOpenDropdown] = useState(null);
+  
+  // Flag to prevent multiple state updates
+  const isHoveringRef = useRef(false);
+  
+  // Refs for dropdown containers
+  const solutionsRef = useRef(null);
+  const industriesRef = useRef(null);
+  const aboutRef = useRef(null);
+  const solutionsMenuRef = useRef(null);
+  const industriesMenuRef = useRef(null);
+  const aboutMenuRef = useRef(null);
+  
+  // Mobile states
   const [mobileSolutionsOpen, setMobileSolutionsOpen] = useState(false);
   const [mobileIndustriesOpen, setMobileIndustriesOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   
+  // Data states
   const [solutions, setSolutions] = useState([]);
   const [industries, setIndustries] = useState([]);
   const [loading, setLoading] = useState({ solutions: false, industries: false });
@@ -211,7 +205,43 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch solutions and industries on mount
+  // Global mouse move handler with throttling
+  useEffect(() => {
+    let timeoutId = null;
+    
+    const handleGlobalMouseMove = (e) => {
+      if (!openDropdown) return;
+      
+      // Clear previous timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
+      // Throttle the checks
+      timeoutId = setTimeout(() => {
+        // Check if mouse is inside any of the dropdown buttons or menus
+        const isInSolutions = solutionsRef.current?.contains(e.target) || solutionsMenuRef.current?.contains(e.target);
+        const isInIndustries = industriesRef.current?.contains(e.target) || industriesMenuRef.current?.contains(e.target);
+        const isInAbout = aboutRef.current?.contains(e.target) || aboutMenuRef.current?.contains(e.target);
+        
+        // If mouse is not in any dropdown area, close all
+        if (!isInSolutions && !isInIndustries && !isInAbout) {
+          setOpenDropdown(null);
+          isHoveringRef.current = false;
+        }
+      }, 50);
+    };
+    
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [openDropdown]);
+
+  // Fetch solutions and industries
   useEffect(() => {
     loadSolutions();
     loadIndustries();
@@ -253,7 +283,7 @@ const Navbar = () => {
 
   const solutionCategories = Object.keys(solutionsByCategory);
 
-  // Split industries into two columns for display
+  // Split industries into two columns
   const midPoint = Math.ceil(industries.length / 2);
   const industriesFirstColumn = industries.slice(0, midPoint);
   const industriesSecondColumn = industries.slice(midPoint);
@@ -288,27 +318,24 @@ const Navbar = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  // Desktop dropdown handlers with animations
-  const handleDropdownOpen = (event, type) => {
-    setActiveDropdown(type);
-    switch(type) {
-      case 'solutions':
-        setSolutionsAnchorEl(event.currentTarget);
-        break;
-      case 'industries':
-        setIndustriesAnchorEl(event.currentTarget);
-        break;
-      case 'about':
-        setAboutAnchorEl(event.currentTarget);
-        break;
+  // Handle mouse enter on dropdown button with debounce
+  const handleMouseEnter = (dropdownName) => {
+    if (!isHoveringRef.current) {
+      isHoveringRef.current = true;
+      setOpenDropdown(dropdownName);
     }
   };
 
-  const handleDropdownClose = () => {
-    setActiveDropdown(null);
-    setSolutionsAnchorEl(null);
-    setIndustriesAnchorEl(null);
-    setAboutAnchorEl(null);
+  // Handle mouse leave from dropdown button
+  const handleMouseLeave = () => {
+    // Don't close immediately, let the global handler handle it
+    // This prevents flickering when moving between tabs
+  };
+
+  // Handle menu item click
+  const handleMenuItemClick = () => {
+    setOpenDropdown(null);
+    isHoveringRef.current = false;
   };
 
   // Mobile dropdown handlers
@@ -324,14 +351,32 @@ const Navbar = () => {
     setMobileAboutOpen(!mobileAboutOpen);
   };
 
-  // Desktop Solutions Menu - Enhanced with animations and categories
+  // Desktop Solutions Menu
   const renderSolutionsMenu = () => (
     <Menu
-      anchorEl={solutionsAnchorEl}
-      open={Boolean(solutionsAnchorEl)}
-      onClose={handleDropdownClose}
+      open={openDropdown === 'solutions'}
+      anchorEl={solutionsRef.current}
+      onClose={() => {
+        setOpenDropdown(null);
+        isHoveringRef.current = false;
+      }}
       TransitionComponent={Fade}
       transitionDuration={300}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'left',
+      }}
+      MenuListProps={{
+        ref: solutionsMenuRef,
+        onMouseEnter: () => {
+          setOpenDropdown('solutions');
+          isHoveringRef.current = true;
+        },
+      }}
       PaperProps={{
         sx: {
           mt: 2,
@@ -406,7 +451,7 @@ const Navbar = () => {
                   <GradientMenuItem
                     component={RouterLink}
                     to={`/solution/${solution._id}`}
-                    onClick={handleDropdownClose}
+                    onClick={handleMenuItemClick}
                     sx={{
                       color: colors.text.secondary,
                       py: 1.5,
@@ -469,7 +514,7 @@ const Navbar = () => {
         <Button
           component={RouterLink}
           to="/our-solutions"
-          onClick={handleDropdownClose}
+          onClick={handleMenuItemClick}
           endIcon={<ArrowForwardIcon />}
           fullWidth
           sx={{
@@ -489,14 +534,32 @@ const Navbar = () => {
     </Menu>
   );
 
-  // Desktop Industries Menu - Enhanced with cards and icons
+  // Desktop Industries Menu
   const renderIndustriesMenu = () => (
     <Menu
-      anchorEl={industriesAnchorEl}
-      open={Boolean(industriesAnchorEl)}
-      onClose={handleDropdownClose}
+      open={openDropdown === 'industries'}
+      anchorEl={industriesRef.current}
+      onClose={() => {
+        setOpenDropdown(null);
+        isHoveringRef.current = false;
+      }}
       TransitionComponent={Grow}
       transitionDuration={300}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'left',
+      }}
+      MenuListProps={{
+        ref: industriesMenuRef,
+        onMouseEnter: () => {
+          setOpenDropdown('industries');
+          isHoveringRef.current = true;
+        },
+      }}
       PaperProps={{
         sx: {
           mt: 2,
@@ -531,14 +594,13 @@ const Navbar = () => {
           </Typography>
           
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            {/* First Column */}
             <Grid item xs={6}>
               {industriesFirstColumn.map((industry) => (
                 <GradientMenuItem
                   key={industry._id}
                   component={RouterLink}
                   to={`/industry/${industry._id}`}
-                  onClick={handleDropdownClose}
+                  onClick={handleMenuItemClick}
                   sx={{
                     color: colors.text.secondary,
                     py: 2,
@@ -578,14 +640,13 @@ const Navbar = () => {
               ))}
             </Grid>
             
-            {/* Second Column */}
             <Grid item xs={6}>
               {industriesSecondColumn.map((industry) => (
                 <GradientMenuItem
                   key={industry._id}
                   component={RouterLink}
                   to={`/industry/${industry._id}`}
-                  onClick={handleDropdownClose}
+                  onClick={handleMenuItemClick}
                   sx={{
                     color: colors.text.secondary,
                     py: 2,
@@ -632,7 +693,7 @@ const Navbar = () => {
             <Button
               component={RouterLink}
               to="/industries-we-serve"
-              onClick={handleDropdownClose}
+              onClick={handleMenuItemClick}
               endIcon={<ArrowForwardIcon />}
               sx={{
                 color: colors.primary.main,
@@ -652,11 +713,29 @@ const Navbar = () => {
   // Desktop About Menu
   const renderAboutMenu = () => (
     <Menu
-      anchorEl={aboutAnchorEl}
-      open={Boolean(aboutAnchorEl)}
-      onClose={handleDropdownClose}
+      open={openDropdown === 'about'}
+      anchorEl={aboutRef.current}
+      onClose={() => {
+        setOpenDropdown(null);
+        isHoveringRef.current = false;
+      }}
       TransitionComponent={Zoom}
       transitionDuration={300}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'left',
+      }}
+      MenuListProps={{
+        ref: aboutMenuRef,
+        onMouseEnter: () => {
+          setOpenDropdown('about');
+          isHoveringRef.current = true;
+        },
+      }}
       PaperProps={{
         sx: {
           mt: 2,
@@ -674,7 +753,7 @@ const Navbar = () => {
           key={item.path}
           component={RouterLink}
           to={item.path}
-          onClick={handleDropdownClose}
+          onClick={handleMenuItemClick}
           sx={{
             color: location.pathname === item.path ? colors.primary.main : colors.text.secondary,
             py: 2,
@@ -712,7 +791,7 @@ const Navbar = () => {
     </Menu>
   );
 
-  // Mobile Drawer - Enhanced with animations
+  // Mobile Drawer (keeping the same)
   const drawer = (
     <Box sx={{ 
       height: '100%',
@@ -1115,7 +1194,7 @@ const Navbar = () => {
           justifyContent: 'space-between',
           transition: 'height 0.3s ease',
         }}>
-          {/* Logo with Animation */}
+          {/* Logo */}
           <Box
             component={RouterLink}
             to="/"
@@ -1174,13 +1253,17 @@ const Navbar = () => {
               </NavButton>
 
               {/* Our Solutions Dropdown */}
-              <Box>
+              <Box 
+                ref={solutionsRef}
+                onMouseEnter={() => handleMouseEnter('solutions')}
+                onMouseLeave={handleMouseLeave}
+                sx={{ position: 'relative' }}
+              >
                 <NavButton
-                  onClick={(e) => handleDropdownOpen(e, 'solutions')}
-                  active={activeDropdown === 'solutions' || location.pathname.startsWith('/solution') ? 1 : 0}
+                  active={openDropdown === 'solutions' || location.pathname.startsWith('/solution') ? 1 : 0}
                   endIcon={<ExpandMoreIcon sx={{ 
                     transition: 'transform 0.3s',
-                    transform: activeDropdown === 'solutions' ? 'rotate(180deg)' : 'none',
+                    transform: openDropdown === 'solutions' ? 'rotate(180deg)' : 'none',
                   }} />}
                 >
                   Our Solutions
@@ -1189,13 +1272,17 @@ const Navbar = () => {
               </Box>
 
               {/* Industries Dropdown */}
-              <Box>
+              <Box 
+                ref={industriesRef}
+                onMouseEnter={() => handleMouseEnter('industries')}
+                onMouseLeave={handleMouseLeave}
+                sx={{ position: 'relative' }}
+              >
                 <NavButton
-                  onClick={(e) => handleDropdownOpen(e, 'industries')}
-                  active={activeDropdown === 'industries' || location.pathname.startsWith('/industry') ? 1 : 0}
+                  active={openDropdown === 'industries' || location.pathname.startsWith('/industry') ? 1 : 0}
                   endIcon={<ExpandMoreIcon sx={{ 
                     transition: 'transform 0.3s',
-                    transform: activeDropdown === 'industries' ? 'rotate(180deg)' : 'none',
+                    transform: openDropdown === 'industries' ? 'rotate(180deg)' : 'none',
                   }} />}
                 >
                   Industries
@@ -1204,13 +1291,17 @@ const Navbar = () => {
               </Box>
 
               {/* About Dropdown */}
-              <Box>
+              <Box 
+                ref={aboutRef}
+                onMouseEnter={() => handleMouseEnter('about')}
+                onMouseLeave={handleMouseLeave}
+                sx={{ position: 'relative' }}
+              >
                 <NavButton
-                  onClick={(e) => handleDropdownOpen(e, 'about')}
-                  active={activeDropdown === 'about' || location.pathname.startsWith('/about') ? 1 : 0}
+                  active={openDropdown === 'about' || location.pathname.startsWith('/about') ? 1 : 0}
                   endIcon={<ExpandMoreIcon sx={{ 
                     transition: 'transform 0.3s',
-                    transform: activeDropdown === 'about' ? 'rotate(180deg)' : 'none',
+                    transform: openDropdown === 'about' ? 'rotate(180deg)' : 'none',
                   }} />}
                 >
                   About

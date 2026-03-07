@@ -26,7 +26,7 @@ export const isAuthenticated = () => {
 // Login user
 export const login = async (username, password) => {
   try {
-    const response = await axios.post(`${API_URL}/auth/login`, {
+    const response = await axios.post(`${API_URL}/api/auth/login`, {
       username,
       password
     });
@@ -62,7 +62,7 @@ export const verifyToken = async () => {
   if (!token) return false;
 
   try {
-    const response = await axios.get(`${API_URL}/auth/verify`, {
+    const response = await axios.get(`${API_URL}/api/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     

@@ -60,7 +60,7 @@ const IndustriesManager = () => {
   const fetchIndustries = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/industries`, {
+      const response = await axios.get(`${API_URL}/api/industries`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIndustries(response.data);
@@ -110,9 +110,9 @@ const IndustriesManager = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (editingIndustry) {
-        await axios.put(`${API_URL}/industries/${editingIndustry._id}`, formData, { headers });
+        await axios.put(`${API_URL}/api/industries/${editingIndustry._id}`, formData, { headers });
       } else {
-        await axios.post(`${API_URL}/industries`, formData, { headers });
+        await axios.post(`${API_URL}/api/industries`, formData, { headers });
       }
 
       fetchIndustries();
@@ -128,7 +128,7 @@ const IndustriesManager = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/industries/${id}`, {
+      await axios.delete(`${API_URL}/api/industries/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchIndustries();

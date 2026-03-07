@@ -19,8 +19,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Tab,
-  Tabs,
   Fade,
   Grow,
   Zoom,
@@ -34,17 +32,14 @@ import {
   ArrowForward as ArrowForwardIcon,
   Speed as SpeedIcon,
   People as PeopleIcon,
-  Timeline as TimelineIcon,
-  EmojiObjects as IdeaIcon,
-  Build as BuildIcon,
-  Security as SecurityIcon,
-  School as SchoolIcon,
-  LocalHospital as LocalHospitalIcon,
   LocationOn as LocationIcon,
   Verified as VerifiedIcon,
   SupportAgent as SupportIcon,
   TrendingUp as TrendingUpIcon,
   Star as StarIcon,
+  Handshake as HandshakeIcon,
+  Lightbulb as LightbulbIcon,
+  RocketLaunch as RocketIcon,
 } from '@mui/icons-material';
 import { fetchIndustries, fetchIndustryDetails } from '../services/api';
 
@@ -90,12 +85,6 @@ const floatAnimation = keyframes`
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0px); }
-`;
-
-const pulseGlow = keyframes`
-  0% { box-shadow: 0 0 0 0 ${alpha(colors.secondary.main, 0.4)}; }
-  70% { box-shadow: 0 0 0 10px ${alpha(colors.secondary.main, 0)}; }
-  100% { box-shadow: 0 0 0 0 ${alpha(colors.secondary.main, 0)}; }
 `;
 
 const gradientFlow = keyframes`
@@ -156,7 +145,6 @@ const ServiceCard = styled(Card)(({ theme }) => ({
   height: '100%',
   borderRadius: '24px',
   transition: 'all 0.3s ease',
-  cursor: 'pointer',
   border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
   '&:hover': {
     transform: 'translateY(-8px)',
@@ -201,30 +189,12 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   },
 }));
 
-const StyledTabs = styled(Tabs)({
-  '& .MuiTabs-indicator': {
-    backgroundColor: colors.secondary.main,
-    height: 3,
-    borderRadius: '3px 3px 0 0',
-  },
-  '& .MuiTab-root': {
-    textTransform: 'none',
-    fontWeight: 600,
-    fontSize: '1rem',
-    color: colors.text.secondary,
-    '&.Mui-selected': {
-      color: colors.secondary.main,
-    },
-  },
-});
-
 const IndustryDetail = () => {
   const { id } = useParams();
   const [industry, setIndustry] = useState(null);
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -249,6 +219,7 @@ const IndustryDetail = () => {
       try {
         const detailsData = await fetchIndustryDetails(id);
         if (detailsData) {
+          console.log('Industry details loaded:', detailsData);
           setDetails(detailsData);
         } else {
           setDetails(null);
@@ -265,10 +236,6 @@ const IndustryDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
   };
 
   if (loading) {
@@ -334,7 +301,7 @@ const IndustryDetail = () => {
             Industries
           </Link>
           <Typography sx={{ color: colors.secondary.main, fontWeight: 600 }}>
-            {industry.title || industry.name}
+            {details?.title || industry?.name}
           </Typography>
         </Breadcrumbs>
       </Container>
@@ -374,71 +341,60 @@ const IndustryDetail = () => {
                   <Box component="span" sx={{ fontSize: '4rem' }}>
                     {industry.icon || '🏢'}
                   </Box>
-                  {industry.title || industry.name}
+                  {details?.title || industry?.name}
                 </Typography>
                 
-                {hasDetails && details.tagline && (
-                  <Typography variant="h5" sx={{ color: colors.secondary.main, mb: 3, fontWeight: 500 }}>
-                    {details.tagline}
-                  </Typography>
-                )}
-                
-                {hasDetails && details.description && (
-                  <Typography variant="body1" sx={{ color: alpha(colors.neutral.white, 0.9), mb: 4, maxWidth: '800px', fontSize: '1.1rem' }}>
-                    {details.description}
+                {hasDetails && (
+                  <Typography variant="h6" sx={{ color: alpha(colors.neutral.white, 0.9), mb: 4, maxWidth: '800px', lineHeight: 1.8 }}>
+                    {details.overview?.description || `Comprehensive technology solutions for the ${industry.name} industry`}
                   </Typography>
                 )}
 
                 {!hasDetails && (
-                  <Typography variant="body1" sx={{ color: alpha(colors.neutral.white, 0.9), mb: 4, maxWidth: '800px', fontSize: '1.1rem' }}>
+                  <Typography variant="h6" sx={{ color: alpha(colors.neutral.white, 0.9), mb: 4, maxWidth: '800px', lineHeight: 1.8 }}>
                     Detailed information for this industry is being added. Please check back soon or contact us for more information.
                   </Typography>
                 )}
                 
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Button
-                    component={Link}
-                    to={details?.cta?.primaryButton?.link || "/contact-us"}
-                    variant="contained"
-                    size="large"
-                    endIcon={<ArrowForwardIcon />}
-                    sx={{
-                      background: colors.secondary.gradient,
-                      color: colors.primary.main,
-                      borderRadius: '12px',
-                      px: 4,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      '&:hover': {
-                        transform: 'scale(1.05)',
-                      },
-                    }}
-                  >
-                    {details?.cta?.primaryButton?.text || "Request a consultation"}
-                  </Button>
-                  <Button
-                    component={Link}
-                    to={details?.cta?.secondaryButton?.link || "/get-started"}
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      color: colors.neutral.white,
-                      borderColor: alpha(colors.neutral.white, 0.3),
-                      borderRadius: '12px',
-                      px: 4,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      '&:hover': {
-                        borderColor: colors.secondary.main,
-                        bgcolor: alpha(colors.secondary.main, 0.1),
-                      },
-                    }}
-                  >
-                    {details?.cta?.secondaryButton?.text || "Get a project proposal"}
-                  </Button>
-                </Box>
+                <Button
+                  component={Link}
+                  to="/get-started"
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    background: colors.secondary.gradient,
+                    color: colors.primary.main,
+                    borderRadius: '12px',
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
+                  }}
+                >
+                  Get Started with This Industry
+                </Button>
               </Grid>
+              {hasDetails && details.heroImage?.url && (
+                <Grid item xs={12} md={4}>
+                  <Zoom in={true} timeout={800}>
+                    <Box
+                      component="img"
+                      src={details.heroImage.url}
+                      alt={details.heroImage.alt || industry.name}
+                      sx={{
+                        width: '100%',
+                        maxHeight: 400,
+                        objectFit: 'contain',
+                        filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.3))',
+                      }}
+                    />
+                  </Zoom>
+                </Grid>
+              )}
             </Grid>
           </Fade>
         </Container>
@@ -461,462 +417,514 @@ const IndustryDetail = () => {
         </Container>
       )}
 
-      {/* Stats Section - Only show if available */}
-      {hasDetails && details.stats && (
+      {/* Overview Section */}
+      {hasDetails && details.overview?.description && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <Fade in={true} timeout={800}>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: { xs: 3, md: 5 }, 
+                bgcolor: colors.neutral.white,
+                borderRadius: '32px',
+                border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+              }}
+            >
+              <SectionTitle variant="h3">{details.overview?.title || 'Overview'}</SectionTitle>
+              <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, color: colors.text.secondary }}>
+                {details.overview.description}
+              </Typography>
+            </Paper>
+          </Fade>
+        </Container>
+      )}
+
+      {/* Stats Section */}
+      {hasDetails && details.stats && (details.stats.projects || details.stats.clients || details.stats.experience) && (
         <Container maxWidth="xl" sx={{ py: 8 }}>
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={800}>
-                <StatCard>
-                  <Typography variant="h2" sx={{ 
-                    color: colors.secondary.main, 
-                    fontWeight: 800, 
-                    fontSize: '3rem',
-                    mb: 1,
-                  }}>
-                    {details.stats?.projects || 0}+
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Projects Completed</Typography>
-                </StatCard>
-              </Zoom>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={800} style={{ transitionDelay: '200ms' }}>
-                <StatCard>
-                  <Typography variant="h2" sx={{ 
-                    color: colors.secondary.main, 
-                    fontWeight: 800, 
-                    fontSize: '3rem',
-                    mb: 1,
-                  }}>
-                    {details.stats?.clients || 0}+
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Happy Clients</Typography>
-                </StatCard>
-              </Zoom>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={800} style={{ transitionDelay: '400ms' }}>
-                <StatCard>
-                  <Typography variant="h2" sx={{ 
-                    color: colors.secondary.main, 
-                    fontWeight: 800, 
-                    fontSize: '3rem',
-                    mb: 1,
-                  }}>
-                    {details.stats?.experience || '0'}
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Years Experience</Typography>
-                </StatCard>
-              </Zoom>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Zoom in={true} timeout={800} style={{ transitionDelay: '600ms' }}>
-                <StatCard>
-                  <Typography variant="h2" sx={{ 
-                    color: colors.secondary.main, 
-                    fontWeight: 800, 
-                    fontSize: '3rem',
-                    mb: 1,
-                  }}>
-                    {details.stats?.satisfaction || '0%'}
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>Client Satisfaction</Typography>
-                </StatCard>
-              </Zoom>
-            </Grid>
+            {details.stats.projects && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Zoom in={true} timeout={800}>
+                  <StatCard>
+                    <Typography variant="h2" sx={{ 
+                      color: colors.secondary.main, 
+                      fontWeight: 800, 
+                      fontSize: '3rem',
+                      mb: 1,
+                    }}>
+                      {details.stats.projects}+
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>Projects Completed</Typography>
+                  </StatCard>
+                </Zoom>
+              </Grid>
+            )}
+            {details.stats.clients && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Zoom in={true} timeout={800} style={{ transitionDelay: '200ms' }}>
+                  <StatCard>
+                    <Typography variant="h2" sx={{ 
+                      color: colors.secondary.main, 
+                      fontWeight: 800, 
+                      fontSize: '3rem',
+                      mb: 1,
+                    }}>
+                      {details.stats.clients}+
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>Happy Clients</Typography>
+                  </StatCard>
+                </Zoom>
+              </Grid>
+            )}
+            {details.stats.experience && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Zoom in={true} timeout={800} style={{ transitionDelay: '400ms' }}>
+                  <StatCard>
+                    <Typography variant="h2" sx={{ 
+                      color: colors.secondary.main, 
+                      fontWeight: 800, 
+                      fontSize: '3rem',
+                      mb: 1,
+                    }}>
+                      {details.stats.experience}
+                    </Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>Years Experience</Typography>
+                  </StatCard>
+                </Zoom>
+              </Grid>
+            )}
           </Grid>
         </Container>
       )}
 
-      {/* Tabs Navigation - Only show if there's content */}
-      {hasDetails && (
-        <Container maxWidth="xl" sx={{ mb: 4 }}>
-          <Paper sx={{ 
-            borderRadius: '50px', 
-            p: 1,
-            background: colors.neutral.white,
-            border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-          }}>
-            <StyledTabs value={tabValue} onChange={handleTabChange} centered>
-              {details.overview && <Tab label="Overview" />}
-              {details.coreServices && details.coreServices.length > 0 && <Tab label="Core Services" />}
-              {details.deliveryApproach && <Tab label="Delivery Approach" />}
-              {details.whyChooseUs && details.whyChooseUs.length > 0 && <Tab label="Why Choose Us" />}
-            </StyledTabs>
-          </Paper>
+      {/* Core Services Section */}
+      {hasDetails && details.coreServices?.items && details.coreServices.items.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              {details.coreServices.title || 'Core Services'}
+            </SectionTitle>
+            <Grid container spacing={3}>
+              {details.coreServices.items.map((service, index) => (
+                <Grid item xs={12} md={6} lg={4} key={index}>
+                  <Grow in={true} timeout={500 + index * 100}>
+                    <ServiceCard>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                          <Avatar sx={{ bgcolor: alpha(colors.secondary.main, 0.1), color: colors.secondary.main }}>
+                            {service.icon ? <Box component="span" sx={{ fontSize: '1.2rem' }}>{service.icon}</Box> : <CheckIcon />}
+                          </Avatar>
+                          <Typography variant="body1" sx={{ fontWeight: 500, color: colors.text.primary }}>
+                            {service.text}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </ServiceCard>
+                  </Grow>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
+
+      {/* Delivery Approach Section */}
+      {hasDetails && details.deliveryApproach?.items && details.deliveryApproach.items.length > 0 && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            {details.deliveryApproach.title || 'Our Delivery Approach'}
+          </SectionTitle>
+          <Grid container spacing={3}>
+            {details.deliveryApproach.items.map((item, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Grow in={true} timeout={500 + index * 100}>
+                  <Paper sx={{ 
+                    p: 3, 
+                    bgcolor: alpha(colors.primary.main, 0.02),
+                    borderRadius: '16px',
+                    border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar sx={{ bgcolor: colors.secondary.main, color: colors.primary.main }}>
+                        {item.icon || <CheckIcon />}
+                      </Avatar>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {item.text}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grow>
+              </Grid>
+            ))}
+          </Grid>
         </Container>
       )}
 
-      {/* Tab Panels - Only show if there's content */}
-      {hasDetails && (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-          {/* Overview Panel */}
-          {details.overview && (
-            <Fade in={tabValue === 0} timeout={500}>
-              <Box sx={{ display: tabValue === 0 ? 'block' : 'none' }}>
-                <Grid container spacing={6}>
-                  <Grid item xs={12}>
-                    <Paper 
-                      elevation={0} 
-                      sx={{ 
-                        p: 5, 
-                        bgcolor: colors.neutral.white,
-                        borderRadius: '32px',
-                        border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                      }}
-                    >
-                      <SectionTitle variant="h3">Overview</SectionTitle>
-                      <Typography variant="body1" sx={{ fontSize: '1.1rem', lineHeight: 1.8, color: colors.text.secondary }}>
-                        {details.overview}
+      {/* Deployment Locations Section */}
+      {hasDetails && details.deploymentLocations?.items && details.deploymentLocations.items.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              {details.deploymentLocations.title || 'Typical Deployment Locations'}
+            </SectionTitle>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+              {details.deploymentLocations.items.map((location, index) => (
+                <Zoom key={index} in={true} timeout={500 + index * 50}>
+                  <Chip
+                    icon={location.icon ? <Box component="span" sx={{ fontSize: '1.2rem' }}>{location.icon}</Box> : <LocationIcon />}
+                    label={location.name}
+                    sx={{
+                      bgcolor: alpha(colors.primary.main, 0.05),
+                      color: colors.primary.main,
+                      fontSize: '1rem',
+                      py: 2.5,
+                      px: 1,
+                      '& .MuiChip-icon': { color: colors.secondary.main },
+                      '&:hover': {
+                        bgcolor: colors.secondary.main,
+                        color: colors.primary.main,
+                        transform: 'scale(1.05)',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
+                </Zoom>
+              ))}
+            </Box>
+          </Container>
+        </Box>
+      )}
+
+      {/* Why Choose Us Section */}
+      {hasDetails && details.whyChooseUs?.features && details.whyChooseUs.features.length > 0 && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            {details.whyChooseUs.title || 'Why Clients Choose Speedlight'}
+          </SectionTitle>
+          <Grid container spacing={3}>
+            {details.whyChooseUs.features.map((feature, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Zoom in={true} timeout={500 + index * 100}>
+                  <Paper sx={{ 
+                    p: 4,
+                    textAlign: 'center',
+                    borderRadius: '20px',
+                    background: `linear-gradient(135deg, ${alpha(colors.primary.main, 0.02)} 0%, ${alpha(colors.secondary.main, 0.05)} 100%)`,
+                    border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+                  }}>
+                    <Avatar sx={{ 
+                      width: 80, 
+                      height: 80, 
+                      mb: 3, 
+                      mx: 'auto',
+                      bgcolor: colors.secondary.main,
+                      color: colors.primary.main,
+                      fontSize: '2rem'
+                    }}>
+                      {feature.icon || <LightbulbIcon />}
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: colors.primary.main }}>
+                      {feature.text}
+                    </Typography>
+                  </Paper>
+                </Zoom>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      )}
+
+      {/* Challenges Section */}
+      {hasDetails && details.challenges && details.challenges.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              Industry Challenges
+            </SectionTitle>
+            <Grid container spacing={4}>
+              {details.challenges.map((challenge, index) => (
+                <Grid item xs={12} md={4} key={index}>
+                  <Grow in={true} timeout={500 + index * 100}>
+                    <Paper sx={{ 
+                      p: 4,
+                      height: '100%',
+                      borderRadius: '20px',
+                      border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        boxShadow: `0 15px 30px -10px ${alpha(colors.primary.main, 0.2)}`,
+                      },
+                    }}>
+                      <Typography variant="h2" sx={{ fontSize: '3rem', mb: 2, textAlign: 'center' }}>
+                        {challenge.icon || '⚠️'}
+                      </Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: colors.primary.main, textAlign: 'center' }}>
+                        {challenge.title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: colors.text.secondary, textAlign: 'center' }}>
+                        {challenge.description}
                       </Typography>
                     </Paper>
-                  </Grid>
-                  
-                  {/* Deployment Locations */}
-                  {details.deploymentLocations && details.deploymentLocations.length > 0 && (
-                    <Grid item xs={12}>
-                      <Paper 
-                        elevation={0} 
-                        sx={{ 
-                          p: 5, 
-                          borderRadius: '32px',
-                          border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                        }}
-                      >
-                        <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: colors.primary.main }}>
-                          Typical Deployment Locations
-                        </Typography>
-                        <Grid container spacing={2}>
-                          {details.deploymentLocations?.map((location, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
-                              <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: 2,
-                                p: 2,
-                                bgcolor: alpha(colors.secondary.main, 0.05),
-                                borderRadius: '12px',
-                              }}>
-                                <LocationIcon sx={{ color: colors.secondary.main }} />
-                                <Typography sx={{ color: colors.text.secondary }}>{location}</Typography>
-                              </Box>
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Paper>
-                    </Grid>
-                  )}
+                  </Grow>
                 </Grid>
-              </Box>
-            </Fade>
-          )}
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
 
-          {/* Core Services Panel */}
-          {details.coreServices && details.coreServices.length > 0 && (
-            <Fade in={tabValue === (details.overview ? 1 : 0)} timeout={500}>
-              <Box sx={{ display: tabValue === (details.overview ? 1 : 0) ? 'block' : 'none' }}>
-                <Grid container spacing={4}>
-                  {details.coreServices?.map((service, index) => (
-                    <Grid item xs={12} md={6} key={index}>
-                      <Grow in={true} timeout={500 + index * 100}>
-                        <ServiceCard>
-                          <CardContent sx={{ p: 4 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                              <Typography 
-                                className="service-icon"
-                                variant="h2" 
-                                sx={{ 
-                                  fontSize: '3rem',
-                                  transition: 'all 0.3s',
-                                }}
-                              >
-                                {service.icon || '🔹'}
-                              </Typography>
-                              <Typography variant="h5" sx={{ fontWeight: 700, color: colors.primary.main }}>
-                                {service.title}
-                              </Typography>
-                            </Box>
-                            <Typography variant="body1" sx={{ mb: 3, color: colors.text.secondary, lineHeight: 1.7 }}>
-                              {service.description}
-                            </Typography>
-                            {service.details && service.details.length > 0 && (
-                              <List dense>
-                                {service.details?.map((detail, idx) => (
-                                  <ListItem key={idx} sx={{ px: 0 }}>
-                                    <ListItemIcon sx={{ minWidth: 30 }}>
-                                      <CheckIcon sx={{ color: colors.secondary.main, fontSize: 20 }} />
-                                    </ListItemIcon>
-                                    <ListItemText 
-                                      primary={detail} 
-                                      primaryTypographyProps={{ color: colors.text.secondary }}
-                                    />
-                                  </ListItem>
-                                ))}
-                              </List>
-                            )}
-                            {service.benefit && (
-                              <Box sx={{ 
-                                mt: 3, 
-                                p: 2, 
-                                bgcolor: alpha(colors.secondary.main, 0.1),
-                                borderRadius: '12px',
-                                borderLeft: `4px solid ${colors.secondary.main}`,
-                              }}>
-                                <Typography variant="subtitle2" sx={{ color: colors.secondary.main, fontWeight: 700 }}>
-                                  Benefit:
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                                  {service.benefit}
-                                </Typography>
-                              </Box>
-                            )}
-                          </CardContent>
-                        </ServiceCard>
-                      </Grow>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </Fade>
-          )}
-
-          {/* Delivery Approach Panel */}
-          {details.deliveryApproach && (
-            <Fade in={tabValue === (details.overview ? (details.coreServices?.length > 0 ? 2 : 1) : (details.coreServices?.length > 0 ? 1 : 0))} timeout={500}>
-              <Box sx={{ display: 'block' }}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 5, 
-                    bgcolor: colors.neutral.white,
-                    borderRadius: '32px',
+      {/* Solutions Section */}
+      {hasDetails && details.solutions && details.solutions.length > 0 && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            Our Solutions
+          </SectionTitle>
+          <Grid container spacing={4}>
+            {details.solutions.map((solution, index) => (
+              <Grid item xs={12} key={index}>
+                <Grow in={true} timeout={500 + index * 100}>
+                  <Paper sx={{ 
+                    p: 4,
+                    borderRadius: '20px',
                     border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                  }}
-                >
-                  <SectionTitle variant="h3">{details.deliveryApproach?.title || 'Our Delivery Approach'}</SectionTitle>
-                  <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', color: colors.text.secondary }}>
-                    {details.deliveryApproach?.description || 'We follow clear project governance, staged testing and sign-off milestones to ensure timely delivery and quality outcomes.'}
-                  </Typography>
-                  <Grid container spacing={3}>
-                    {details.deliveryApproach?.steps?.map((step, index) => (
-                      <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
-                        <Paper 
-                          elevation={2} 
-                          sx={{ 
-                            p: 3, 
-                            textAlign: 'center', 
-                            height: '100%', 
-                            borderRadius: '20px',
-                            background: colors.neutral.white,
-                            border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              transform: 'translateY(-5px)',
-                              borderColor: colors.secondary.main,
-                            },
-                          }}
-                        >
-                          <Typography variant="h2" sx={{ fontSize: '2.5rem', mb: 2 }}>
-                            {step.icon || '📋'}
-                          </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: colors.primary.main }}>
-                            {step.title}
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                            {step.description}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </Paper>
-              </Box>
-            </Fade>
-          )}
-
-          {/* Why Choose Us Panel */}
-          {details.whyChooseUs && details.whyChooseUs.length > 0 && (
-            <Fade in={tabValue === (details.overview ? (details.coreServices?.length > 0 ? (details.deliveryApproach ? 3 : 2) : (details.deliveryApproach ? 2 : 1)) : (details.coreServices?.length > 0 ? (details.deliveryApproach ? 2 : 1) : (details.deliveryApproach ? 1 : 0)))} timeout={500}>
-              <Box sx={{ display: 'block' }}>
-                <Grid container spacing={4}>
-                  <Grid item xs={12}>
-                    <Paper 
-                      elevation={0} 
-                      sx={{ 
-                        p: 5, 
-                        borderRadius: '32px',
-                        border: `1px solid ${alpha(colors.primary.main, 0.1)}`,
-                      }}
-                    >
-                      <SectionTitle variant="h3">Why Clients Choose Speedlight</SectionTitle>
-                      <Grid container spacing={3}>
-                        {details.whyChooseUs?.map((item, index) => (
-                          <Grid item xs={12} md={6} key={index}>
-                            <Box sx={{ 
-                              display: 'flex', 
-                              alignItems: 'flex-start', 
-                              gap: 2, 
-                              p: 2,
-                              bgcolor: alpha(colors.secondary.main, 0.05),
-                              borderRadius: '16px',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateX(8px)',
-                                bgcolor: alpha(colors.secondary.main, 0.1),
-                              },
-                            }}>
-                              <Avatar sx={{ 
-                                bgcolor: colors.secondary.main, 
-                                color: colors.primary.main,
-                                width: 40,
-                                height: 40,
-                              }}>
-                                {item.icon || <StarIcon />}
-                              </Avatar>
-                              <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700, color: colors.primary.main }}>
-                                  {item.point || item}
-                                </Typography>
-                                {item.description && (
-                                  <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.5 }}>
-                                    {item.description}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Box>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Paper>
-                  </Grid>
-
-                  {/* Key Benefits */}
-                  <Grid item xs={12}>
-                    <Typography variant="h4" sx={{ fontWeight: 700, mb: 4, color: colors.primary.main }}>
-                      Key Benefits
-                    </Typography>
-                    <Grid container spacing={3}>
-                      {[
-                        { icon: <VerifiedIcon />, title: 'Single-vendor accountability', desc: 'From design through support' },
-                        { icon: <PeopleIcon />, title: 'Experienced engineers', desc: 'Enterprise deployment discipline' },
-                        { icon: <SecurityIcon />, title: 'Tailored solutions', desc: 'Customized to your workflows' },
-                        { icon: <SupportIcon />, title: 'Fast support', desc: 'Documented processes and SLA' },
-                      ].map((benefit, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
-                          <BenefitCard elevation={0}>
-                            <Avatar sx={{ 
-                              bgcolor: colors.secondary.main, 
-                              color: colors.primary.main,
-                              width: 56, 
-                              height: 56, 
-                              mb: 2, 
-                              mx: 'auto',
-                            }}>
-                              {benefit.icon}
-                            </Avatar>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: colors.primary.main }}>
-                              {benefit.title}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: colors.text.secondary }}>
-                              {benefit.desc}
-                            </Typography>
-                          </BenefitCard>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Fade>
-          )}
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <Avatar sx={{ bgcolor: colors.secondary.main, color: colors.primary.main, width: 56, height: 56 }}>
+                        {solution.icon || <RocketIcon />}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: colors.primary.main }}>
+                          {solution.title}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: colors.text.secondary, mt: 1 }}>
+                          {solution.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    {solution.solutions && solution.solutions.length > 0 && (
+                      <>
+                        <Divider sx={{ my: 2 }} />
+                        <List>
+                          {solution.solutions.map((item, idx) => (
+                            <ListItem key={idx}>
+                              <ListItemIcon>
+                                <CheckIcon sx={{ color: colors.secondary.main }} />
+                              </ListItemIcon>
+                              <ListItemText primary={item} />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                  </Paper>
+                </Grow>
+              </Grid>
+            ))}
+          </Grid>
         </Container>
       )}
 
-      {/* Next Steps CTA */}
-      <Box sx={{ bgcolor: colors.primary.main, py: { xs: 6, md: 10 }, mt: 4 }}>
-        <Container maxWidth="xl">
-          <Fade in={true} timeout={1000}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 4, md: 8 },
-                bgcolor: 'transparent',
-                textAlign: 'center',
-                border: `1px solid ${alpha(colors.secondary.main, 0.2)}`,
-                borderRadius: '48px',
-              }}
-            >
-              <Typography 
-                variant="h3" 
-                sx={{ 
-                  fontWeight: 800, 
-                  mb: 3, 
-                  color: colors.neutral.white,
-                  fontSize: { xs: '1.75rem', md: '2.5rem' },
-                }}
-              >
-                {details?.cta?.title || `Ready to Transform Your ${industry.title || industry.name} Operations?`}
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: alpha(colors.neutral.white, 0.8), 
-                  mb: 4, 
-                  fontSize: '1.2rem',
-                  maxWidth: '800px',
-                  mx: 'auto',
-                }}
-              >
-                {details?.cta?.description || "To discuss a site assessment, feasibility study or project proposal, contact Speedlight Infosolutions Pvt Ltd"}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Button
-                  component={Link}
-                  to={details?.cta?.primaryButton?.link || "/contact-us"}
-                  variant="contained"
-                  size="large"
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{
-                    background: colors.secondary.gradient,
-                    color: colors.primary.main,
-                    borderRadius: '16px',
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                    },
-                  }}
-                >
-                  {details?.cta?.primaryButton?.text || "Request a consultation"}
-                </Button>
-                <Button
-                  component={Link}
-                  to={details?.cta?.secondaryButton?.link || "/get-started"}
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    color: colors.neutral.white,
-                    borderColor: alpha(colors.neutral.white, 0.3),
-                    borderRadius: '16px',
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    '&:hover': {
-                      borderColor: colors.secondary.main,
-                      bgcolor: alpha(colors.secondary.main, 0.1),
-                    },
-                  }}
-                >
-                  {details?.cta?.secondaryButton?.text || "Get a project proposal"}
-                </Button>
-              </Box>
-            </Paper>
-          </Fade>
+      {/* Technologies Section */}
+      {hasDetails && details.technologies && details.technologies.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              Technologies We Use
+            </SectionTitle>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+              {details.technologies.map((tech, index) => (
+                <Zoom key={index} in={true} timeout={500 + index * 50}>
+                  <Chip
+                    icon={tech.icon ? <Box component="span" sx={{ fontSize: '1.2rem' }}>{tech.icon}</Box> : undefined}
+                    label={tech.name}
+                    sx={{
+                      bgcolor: alpha(colors.primary.main, 0.05),
+                      color: colors.primary.main,
+                      fontSize: '1rem',
+                      py: 2.5,
+                      px: 1,
+                      '&:hover': {
+                        bgcolor: colors.secondary.main,
+                        color: colors.primary.main,
+                        transform: 'scale(1.05)',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
+                </Zoom>
+              ))}
+            </Box>
+          </Container>
+        </Box>
+      )}
+
+      {/* Benefits Section */}
+      {hasDetails && details.benefits && details.benefits.length > 0 && (
+        <Container maxWidth="xl" sx={{ py: 8 }}>
+          <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+            Key Benefits
+          </SectionTitle>
+          <Grid container spacing={4}>
+            {details.benefits.map((benefit, index) => (
+              <Grid item xs={12} md={4} key={index}>
+                <Zoom in={true} timeout={500 + index * 100}>
+                  <BenefitCard elevation={0}>
+                    <Avatar sx={{ 
+                      bgcolor: alpha(colors.secondary.main, 0.1), 
+                      color: colors.secondary.main,
+                      width: 64, 
+                      height: 64, 
+                      mb: 2, 
+                      mx: 'auto',
+                    }}>
+                      {benefit.icon || <TrendingUpIcon />}
+                    </Avatar>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: colors.primary.main }}>
+                      {benefit.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+                      {benefit.description}
+                    </Typography>
+                  </BenefitCard>
+                </Zoom>
+              </Grid>
+            ))}
+          </Grid>
         </Container>
-      </Box>
+      )}
+
+      {/* Gallery Section */}
+      {hasDetails && details.gallery && details.gallery.length > 0 && (
+        <Box sx={{ bgcolor: colors.neutral.white, py: 8 }}>
+          <Container maxWidth="xl">
+            <SectionTitle variant="h3" sx={{ textAlign: 'center', '&::after': { left: '50%', transform: 'translateX(-50%)' } }}>
+              Project Gallery
+            </SectionTitle>
+            <Grid container spacing={3}>
+              {details.gallery.map((item, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Grow in={true} timeout={500 + index * 100}>
+                    <Paper
+                      sx={{
+                        position: 'relative',
+                        borderRadius: '20px',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        '&:hover .gallery-overlay': {
+                          opacity: 1,
+                        },
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={item.imageUrl}
+                        alt={item.caption || 'Gallery image'}
+                        sx={{
+                          width: '100%',
+                          height: 250,
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                          },
+                        }}
+                      />
+                      <Box
+                        className="gallery-overlay"
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          bgcolor: alpha(colors.primary.main, 0.8),
+                          color: colors.neutral.white,
+                          p: 2,
+                          opacity: 0,
+                          transition: 'opacity 0.3s ease',
+                        }}
+                      >
+                        <Typography variant="body2">{item.caption}</Typography>
+                      </Box>
+                    </Paper>
+                  </Grow>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
+
+      {/* CTA Section */}
+      <Container maxWidth="xl" sx={{ py: 8 }}>
+        <Fade in={true} timeout={1000}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 4, md: 8 },
+              background: colors.primary.gradient,
+              borderRadius: '48px',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h3" sx={{ 
+              fontWeight: 800, 
+              mb: 3, 
+              color: colors.neutral.white, 
+              fontSize: { xs: '1.75rem', md: '2.5rem' } 
+            }}>
+              Ready to Transform Your {industry.name} Operations?
+            </Typography>
+            <Typography variant="body1" sx={{ color: alpha(colors.neutral.white, 0.9), mb: 4, fontSize: '1.2rem', maxWidth: '800px', mx: 'auto' }}>
+              Let us help you transform your organization with our cutting-edge solutions
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button
+                component={Link}
+                to="/contact-us"
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  background: colors.secondary.gradient,
+                  color: colors.primary.main,
+                  borderRadius: '16px',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                Contact Us Today
+              </Button>
+              <Button
+                component={Link}
+                to="/get-started"
+                variant="outlined"
+                size="large"
+                sx={{
+                  color: colors.neutral.white,
+                  borderColor: alpha(colors.neutral.white, 0.3),
+                  borderRadius: '16px',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': {
+                    borderColor: colors.secondary.main,
+                    bgcolor: alpha(colors.secondary.main, 0.1),
+                  },
+                }}
+              >
+                Get Started
+              </Button>
+            </Box>
+          </Paper>
+        </Fade>
+      </Container>
     </Box>
   );
 };

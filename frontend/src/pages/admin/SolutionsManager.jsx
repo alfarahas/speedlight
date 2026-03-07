@@ -88,7 +88,7 @@ const SolutionsManager = () => {
         return;
       }
 
-      const response = await axios.get(`${API_URL}/solutions`, {
+      const response = await axios.get(`${API_URL}/api/solutions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -153,9 +153,9 @@ const SolutionsManager = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (editingSolution) {
-        await axios.put(`${API_URL}/solutions/${editingSolution._id}`, formData, { headers });
+        await axios.put(`${API_URL}/api/solutions/${editingSolution._id}`, formData, { headers });
       } else {
-        await axios.post(`${API_URL}/solutions`, formData, { headers });
+        await axios.post(`${API_URL}/api/solutions`, formData, { headers });
       }
 
       await fetchSolutions();
@@ -176,7 +176,7 @@ const SolutionsManager = () => {
         return;
       }
 
-      await axios.delete(`${API_URL}/solutions/${id}`, {
+      await axios.delete(`${API_URL}/api/solutions/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

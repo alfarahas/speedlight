@@ -75,7 +75,7 @@ const SolutionDetail = () => {
       setLoading(true);
       
       // Fetch main solution
-      const solutionRes = await axios.get(`${API_URL}/public/solutions`);
+      const solutionRes = await axios.get(`${API_URL}/api/public/solutions`);
       const foundSolution = solutionRes.data.find(s => s._id === id);
       
       if (!foundSolution) {
@@ -87,7 +87,7 @@ const SolutionDetail = () => {
 
       // Fetch solution details
       try {
-        const detailsRes = await axios.get(`${API_URL}/public/solution-details/${id}`);
+        const detailsRes = await axios.get(`${API_URL}/api/public/solution-details/${id}`);
         setDetails(detailsRes.data);
       } catch (err) {
         // If no details found, that's okay - we'll show only basic info
